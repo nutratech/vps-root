@@ -97,3 +97,30 @@ server {
 #		try_files $uri $uri/ =404;
 #	}
 #}
+
+server {
+    server_name vps76.heliohost.us; # managed by Certbot
+	return 302 https://$server_name$request_uri;
+
+
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/vps76.heliohost.us/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/vps76.heliohost.us/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    if ($host = vps76.heliohost.us) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+	listen 80 ;
+	listen [::]:80 ;
+    server_name vps76.heliohost.us;
+    return 404; # managed by Certbot
+
+
+}
