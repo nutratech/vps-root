@@ -1,0 +1,11 @@
+[Unit]
+Description=Sanic Example
+
+[Service]
+User=shane
+ExecStart=/usr/bin/env python3 -m ntserv
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
