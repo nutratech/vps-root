@@ -26,6 +26,12 @@ server {
     proxy_set_header upgrade $http_upgrade;
   }
 
+
+  # default favicon
+  location = /favicon.ico {
+      alias /www/ntserv/static/favicon.ico;
+  }
+
     listen 80; # managed by Certbot
 
     listen 443 ssl; # managed by Certbot
@@ -52,4 +58,5 @@ server {
   server_name ~^www\.(.*)$;
   return 301 $scheme://$1$request_uri;
 }
+
 
