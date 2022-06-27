@@ -35,34 +35,11 @@ server {
 
 }
 
-# Redirect all HTTP to HTTPS with no-WWW
+# Redirect all to HTTP no-WWW
 server {
-  listen 443 default_server;
-  listen [::]:443 default_server;
+  listen 80 default_server;
+  listen [::]:80 default_server;
   server_name ~^(?:www\.)?(.*)$;
   return 301 http://$1$request_uri;
-}
-
-
-# Wordpress
-server {
-        server_name  _;
-        return 302 $scheme://example.com$request_uri;
-}
- 
-server {
-    server_name deveast.linode.poczatek.dev;
-    root /home/shane/nutra/wordpress;
- 
-    index index.php;
- 
-    #include restrictions.conf;
- 
-    # Additional rules go here.
- 
-    # Only include one of the files below.
-    include conf.d/wordpress.conf;
-#    include global/wordpress-ms-subdir.conf;
-#    include global/wordpress-ms-subdomain.conf;
 }
 
