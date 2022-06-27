@@ -7,7 +7,7 @@ upstream deveast.linode.poczatek.dev {
 server {
   server_name deveast.linode.poczatek.dev;
   # listen 443 ssl http2 default_server;
-  # listen [::]:443 ssl http2 default_server;
+  listen [::]:443 ssl http2 default_server;
   # Serve static files if found, otherwise proxy to Sanic
   location / {
     root /var/www;
