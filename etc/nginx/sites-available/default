@@ -61,7 +61,7 @@ server {
     # Additional rules go here.
  
     # Only include one of the files below.
-    include wordpress.conf;
+    include conf.d/wordpress.conf;
 #    include global/wordpress-ms-subdir.conf;
 #    include global/wordpress-ms-subdomain.conf;
 }
