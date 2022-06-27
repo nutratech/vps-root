@@ -1,0 +1,12 @@
+[Unit]
+Description=GitHub Action Runner
+
+[Service]
+User=shane
+WorkingDirectory=/home/shane/actions-runner
+ExecStart=/bin/bash run.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
