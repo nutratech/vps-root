@@ -8,7 +8,8 @@ server {
   server_name deveast.linode.poczatek.dev;
   # listen 443 ssl http2 default_server;
   # listen [::]:443 ssl http2 default_server;
-  listen [::]:80 ipv6only=on default_server;
+  listen 80 default_server;
+  listen [::]:80 http2 default_server;
   # Serve static files if found, otherwise proxy to Sanic
   location / {
     root /var/www;
