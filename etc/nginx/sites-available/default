@@ -43,10 +43,3 @@ server {
   return 301 http://$1$request_uri;
 }
 
-# Redirect WWW to no-WWW
-server {
-  listen 80 http2;
-  listen [::]:80 http2;
-  server_name ~^www\.(.*)$;
-  return 301 $scheme://$1$request_uri;
-}
