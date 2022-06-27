@@ -2,10 +2,9 @@
 Description=Nutra Server (Sanic / PostgreSQL)
 
 [Service]
-User=shane
 ExecStart=/usr/bin/env python3 -m ntserv
 Restart=always
-Environment="NTSERV_ENV=prod" "NTSERV_N_WORKERS=2" "NTSERV_PSQL_PASSWORD=REDACTED" "NTSERV_JWT_SECRET=REDACTED" "NTSERV_PROXY_SECRET=REDACTED"
+Environment="NTSERV_ENV=dev" "NTSERV_N_WORKERS=2" "NTSERV_PSQL_PASSWORD=password" "NTSERV_JWT_SECRET=secret" "NTSERV_PROXY_SECRET=secret"
 
 [Install]
 WantedBy=multi-user.target
