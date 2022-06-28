@@ -5,6 +5,9 @@ upstream deveast.linode.poczatek.dev {
 }
 
 server {
+  set $server_url "deveast.linode.poczatek.dev";
+
+
   server_name $server_url;
   # listen 443 ssl http2 default_server;
   listen [::]:443 ssl http2 default_server;
@@ -38,7 +41,6 @@ server {
   }
 
 
-  set $server_url "deveast.linode.poczatek.dev";
   listen 443 ssl; # managed by Certbot
   ssl_certificate /etc/letsencrypt/live/$server_url/fullchain.pem; # managed by Certbot
   ssl_certificate_key /etc/letsencrypt/live/$server_url/privkey.pem; # managed by Certbot
