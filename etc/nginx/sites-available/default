@@ -8,11 +8,16 @@ server {
   server_name deveast.linode.poczatek.dev;
   # listen 443 ssl http2 default_server;
   listen [::]:443 ssl http2 default_server;
+
+
+  # TODO: do we want to do this?
   # Serve static files if found, otherwise proxy to Sanic
   location / {
     root /var/www;
     try_files $uri @sanic;
   }
+
+
   location @sanic {
     proxy_pass http://$server_name;
     # Allow fast streaming HTTP/1.1 pipes (keep-alive, unbuffered)
@@ -25,33 +30,33 @@ server {
     proxy_set_header connection "upgrade";
     proxy_set_header upgrade $http_upgrade;
   }
+
+
   # default favicon
   location = /favicon.ico {
     alias /www/ntserv/static/favicon.gif;
   }
 
 
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/deveast.linode.poczatek.dev/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/deveast.linode.poczatek.dev/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-
+  listen 443 ssl; # managed by Certbot
+  ssl_certificate /etc/letsencrypt/live/deveast.linode.poczatek.dev/fullchain.pem; # managed by Certbot
+  ssl_certificate_key /etc/letsencrypt/live/deveast.linode.poczatek.dev/privkey.pem; # managed by Certbot
+  include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 }
 
 
-
+# TODO: if is evil
+# https://wordpress.org/support/article/nginx/
+# http://wiki.nginx.org/IfIsEvil
 server {
     if ($host = deveast.linode.poczatek.dev) {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 
-
   server_name deveast.linode.poczatek.dev;
-    listen 80;
-    return 404; # managed by Certbot
-
-
+  listen 80;
+  return 404; # managed by Certbot
 }
 
 
@@ -62,6 +67,7 @@ server {
   server_name ~^(?:www\.)?(.*)$;
   return 301 https://$1$request_uri;
 }
+
 
 # Redirect WWW to no-WWW
 server {
