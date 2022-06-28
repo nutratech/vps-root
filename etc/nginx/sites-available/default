@@ -34,7 +34,7 @@ server {
 
   # default favicon
   location = /favicon.ico {
-    alias /www/ntserv/static/favicon.gif;
+    alias /var/www/ntserv/static/favicon.gif;
   }
 
 
