@@ -5,7 +5,7 @@ upstream deveast.linode.poczatek.dev {
 }
 
 server {
-  server_name deveast.linode.poczatek.dev;
+  server_name $server_url;
   # listen 443 ssl http2 default_server;
   listen [::]:443 ssl http2 default_server;
 
@@ -38,9 +38,10 @@ server {
   }
 
 
+  set $server_url "deveast.linode.poczatek.dev";
   listen 443 ssl; # managed by Certbot
-  ssl_certificate /etc/letsencrypt/live/deveast.linode.poczatek.dev/fullchain.pem; # managed by Certbot
-  ssl_certificate_key /etc/letsencrypt/live/deveast.linode.poczatek.dev/privkey.pem; # managed by Certbot
+  ssl_certificate /etc/letsencrypt/live/$server_url/fullchain.pem; # managed by Certbot
+  ssl_certificate_key /etc/letsencrypt/live/$server_url/privkey.pem; # managed by Certbot
   include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
   ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 }
@@ -50,12 +51,15 @@ server {
 # https://wordpress.org/support/article/nginx/
 # http://wiki.nginx.org/IfIsEvil
 server {
-    if ($host = deveast.linode.poczatek.dev) {
+    set $server_url "deveast.linode.poczatek.dev";
+
+
+    if ($host = $server_url) {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 
 
-  server_name deveast.linode.poczatek.dev;
+  server_name $server_url;
   listen 80;
   return 404; # managed by Certbot
 }
