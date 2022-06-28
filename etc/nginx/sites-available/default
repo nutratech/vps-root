@@ -69,16 +69,14 @@ server {
 # https://wordpress.org/support/article/nginx/
 # http://wiki.nginx.org/IfIsEvil
 server {
+  server_name deveast.linode.poczatek.dev;
+
 
   # CertBot
   if ($host = deveast.linode.poczatek.dev) {
     return 301 https://$host$request_uri;
   } # managed by Certbot
 
-
-  server_name deveast.linode.poczatek.dev;
-
-  # CertBot
   listen 80;
   return 404; # managed by Certbot
 }
@@ -100,4 +98,3 @@ server {
   server_name ~^www\.(.*)$;
   return 301 $scheme://$1$request_uri;
 }
-
