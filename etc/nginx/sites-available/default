@@ -1,6 +1,7 @@
 upstream deveast.linode.poczatek.dev {
   keepalive 100;
-  server 127.0.0.1:20000;
+  # server 127.0.0.1:20000;
+  server  127.0.0.1:2368;
   # server unix:/tmp/sanic.sock;
 }
 
