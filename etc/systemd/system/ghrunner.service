@@ -1,11 +1,12 @@
 [Unit]
-Description=GitHub Action Runner
+Description=GitHub Action Runner (nutra-server) [deploy-dev]
 
 [Service]
-User=shane
-WorkingDirectory=/home/shane/actions-runner
+User=sanic
+WorkingDirectory=/home/sanic/actions-runner
 ExecStart=/bin/bash run.sh
 Restart=always
+Environment="NTSERV_PSQL_PASSWORD=REDACTED"
 
 [Install]
 WantedBy=multi-user.target
