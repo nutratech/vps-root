@@ -12,8 +12,8 @@ server {
 
   # React app (base URL)
   location / {
-    root /var/www/react_app;
-    index  index.html index.htm;
+    alias /var/www/react_app;
+    index index.html;
     try_files $uri $uri/ /index.html =404;
   }
 
@@ -33,6 +33,13 @@ server {
 
   location ~ /.well-known {
     allow all;
+  }
+
+
+  # [NEW] Sphinx blog
+  location /docs {
+    alias /var/www/docs/_build/html;
+    index index.html;
   }
 
 
