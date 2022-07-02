@@ -2,7 +2,7 @@
 Description=Nutra Server (Sanic / PostgreSQL)
 
 [Service]
-User=sanic
+User=github
 ExecStart=/usr/bin/env python3 -m ntserv
 Restart=always
 Environment="NTSERV_ENV=dev" "NTSERV_SERVER_HOST=https://dev.nutra.tk" "NTSERV_N_WORKERS=2" "NTSERV_PSQL_PASSWORD=REDACTED" "NTSERV_JWT_SECRET=secret" "NTSERV_PROXY_SECRET=secret"
