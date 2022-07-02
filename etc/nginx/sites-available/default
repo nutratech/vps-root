@@ -36,6 +36,13 @@ server {
   }
 
 
+  # [NEW] Sphinx blog
+  location /docs {
+    alias /var/www/docs/_build/html;
+    index index.html;
+  }
+
+
   # Sanic
   location /api/ {
     proxy_pass http://$server_name;
