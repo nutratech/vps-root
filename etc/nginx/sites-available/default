@@ -11,7 +11,6 @@ server {
 
   client_max_body_size 50m;
 
-
   # React app (base URL)
   location / {
     alias /var/www/react_app;
@@ -21,8 +20,8 @@ server {
 
 
   # Blog / Sphinx
-  location ^~ /blog/ {
-    alias /var/www/docs/_build/html;
+  location /blog {
+    alias /var/www/blog/_build/html;
     index index.html;
   }
 
