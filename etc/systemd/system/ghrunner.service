@@ -2,8 +2,8 @@
 Description=GitHub Action Runner (nutra-server) [deploy-dev]
 
 [Service]
-User=sanic
-WorkingDirectory=/home/sanic/actions-runner
+User=github
+WorkingDirectory=/home/github/actions-runner
 ExecStart=/bin/bash run.sh
 Restart=always
 Environment="NTSERV_PSQL_PASSWORD=REDACTED"
