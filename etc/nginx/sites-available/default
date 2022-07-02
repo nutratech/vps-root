@@ -6,8 +6,8 @@ upstream dev.nutra.tk {
 
 server {
   server_name dev.nutra.tk;
-  listen 443 ssl;
-  listen [::]:443 ssl ipv6only=on; # managed by Certbot
+  #listen 443 ssl;
+  #listen [::]:443 ssl ipv6only=on; # managed by Certbot
 
   client_max_body_size 50m;
 
@@ -52,44 +52,24 @@ server {
     allow all;
   }
 
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/dev.nutra.tk/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/dev.nutra.tk/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 
-  # HTTPS / SSL
-  ssl_certificate /etc/letsencrypt/live/deveast.linode.poczatek.dev/fullchain.pem; # managed by Certbot
-  ssl_certificate_key /etc/letsencrypt/live/deveast.linode.poczatek.dev/privkey.pem; # managed by Certbot
-  include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 }
 
 
-# Redirect all HTTP to HTTPS with no-WWW
 server {
-  listen 80 default_server;
-  listen [::]:80 default_server;
-  server_name ~^(?:www\.)?(.*)$;
-  return 301 https://$1$request_uri;
+    if ($host = dev.nutra.tk) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+  server_name dev.nutra.tk;
+  listen 80;
+    return 404; # managed by Certbot
+
+
 }
-
-
-# Redirect WWW to no-WWW
-server {
-  listen 443 ssl http2;
-  listen [::]:443 ssl http2;
-  server_name ~^www\.(.*)$;
-  return 301 $scheme://$1$request_uri;
-}
-
-
-# TODO: if is evil
-# https://wordpress.org/support/article/nginx/
-# http://wiki.nginx.org/IfIsEvil
-server {
-  if ($host = deveast.linode.poczatek.dev) {
-    return 301 https://$host$request_uri;
-  } # managed by Certbot
-
-
-  if ($host = dev.nutra.tk) {
-    return 301 https://$host$request_uri;
-  } # managed by Certbot
-}
-
