@@ -13,7 +13,7 @@ server {
 
   # React app (base URL)
   location / {
-    alias /var/www/react_app;
+    root /var/www/react_app;
     index index.html;
     try_files $uri $uri/ /index.html =404;
   }
