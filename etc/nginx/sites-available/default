@@ -41,6 +41,11 @@ server {
   }
 
 
+  # Mattermost
+  # location /chat/ {
+  # }
+
+
   # default favicon
   location = /favicon.ico {
     alias /var/www/favicon.gif;
