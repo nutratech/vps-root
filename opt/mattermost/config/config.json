@@ -131,7 +131,7 @@
     },
     "SqlSettings": {
         "DriverName": "postgres",
-        "DataSource": "postgres://mmuser:mostest@localhost/mattermost_test?sslmode=disable\u0026connect_timeout=10\u0026binary_parameters=yes",
+        "DataSource": "postgres://mmuser:wYamUeceM9nE@localhost/mattermost?sslmode=disable\u0026connect_timeout=10\u0026binary_parameters=yes",
         "DataSourceReplicas": [],
         "DataSourceSearchReplicas": [],
         "MaxIdleConns": 20,
@@ -533,7 +533,7 @@
         "ClientDirectory": "./client/plugins",
         "Plugins": {
             "playbooks": {
-                "BotUserID": "ytsk9jaddjre5rom7kdxngp6sw"
+                "BotUserID": "ogthfh71y3y8dxwgucz4dh6roh"
             }
         },
         "PluginStates": {
