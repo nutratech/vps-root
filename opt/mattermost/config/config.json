@@ -26,7 +26,7 @@
         "EnableCommands": true,
         "EnablePostUsernameOverride": false,
         "EnablePostIconOverride": false,
-        "GoogleDeveloperKey": "",
+        "GoogleDeveloperKey": "AIzaSyDcW-V72f84SNbHBIdhOeOP47Kn7npRjYc",
         "EnableLinkPreviews": true,
         "EnablePermalinkPreviews": true,
         "RestrictLinkPreviews": "",
@@ -48,11 +48,11 @@
         "AllowCookiesForSubdomains": false,
         "ExtendSessionLengthWithActivity": true,
         "SessionLengthWebInDays": 30,
-        "SessionLengthWebInHours": 720,
+        "SessionLengthWebInHours": 1440,
         "SessionLengthMobileInDays": 30,
-        "SessionLengthMobileInHours": 720,
+        "SessionLengthMobileInHours": 1440,
         "SessionLengthSSOInDays": 30,
-        "SessionLengthSSOInHours": 720,
+        "SessionLengthSSOInHours": 1440,
         "SessionCacheInMinutes": 10,
         "SessionIdleTimeoutInMinutes": 43200,
         "WebsocketSecurePort": 443,
@@ -85,9 +85,9 @@
         "EnableEmailInvitations": true,
         "DisableBotsWhenOwnerIsDeactivated": true,
         "EnableBotAccountCreation": false,
-        "EnableSVGs": false,
+        "EnableSVGs": true,
         "EnableLatex": false,
-        "EnableInlineLatex": true,
+        "EnableInlineLatex": false,
         "EnableAPIChannelDeletion": false,
         "EnableLocalMode": false,
         "LocalModeSocketLocation": "/var/tmp/mattermost_local.socket",
@@ -230,8 +230,8 @@
         "SMTPPort": "25",
         "SMTPServerTimeout": 10,
         "ConnectionSecurity": "",
-        "SendPushNotifications": false,
-        "PushNotificationServer": "http://127.0.0.1:8066",
+        "SendPushNotifications": true,
+        "PushNotificationServer": "https://push-test.mattermost.com",
         "PushNotificationContents": "full",
         "PushNotificationBuffer": 1000,
         "EnableEmailBatching": false,
@@ -565,7 +565,9 @@
         "ChimeraOAuthProxyURL": ""
     },
     "DisplaySettings": {
-        "CustomURLSchemes": [],
+        "CustomURLSchemes": [
+            "git"
+        ],
         "ExperimentalTimezone": true
     },
     "GuestAccountsSettings": {

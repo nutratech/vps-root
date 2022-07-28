@@ -1,0 +1,10 @@
+[Unit]
+Description=Mattermost Push Notification Service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c '/opt/mpns/bin/mattermost-push-proxy | logger'
+WorkingDirectory=/opt/mpns
+
+[Install]
+WantedBy=multi-user.target
