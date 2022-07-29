@@ -87,11 +87,11 @@ server {
   }
 
 
-  # New chat (matrix / element)
-  location ~ /v2/chat/ {
-    proxy_pass http://127.0.0.1:8008;
-    proxy_set_header X-Forwarded-For $remote_addr;
-  }
+#  # New chat (matrix / element)
+#  location ~ /v2/chat/ {
+#    proxy_pass http://127.0.0.1:8008;
+#    proxy_set_header X-Forwarded-For $remote_addr;
+#  }
 
   # default favicon
   location = /favicon.ico {
@@ -119,11 +119,11 @@ server {
   listen [::]:8448 ssl default_server;
   server_name dev.nutra.tk;
 
-
   location / {
     proxy_pass http://127.0.0.1:8008;
     proxy_set_header X-Forwarded-For $remote_addr;
   }
+
   # HTTPS / SSL
   ssl_certificate /etc/letsencrypt/live/dev.nutra.tk/fullchain.pem; # managed by Certbot
   ssl_certificate_key /etc/letsencrypt/live/dev.nutra.tk/privkey.pem; # managed by Certbot
