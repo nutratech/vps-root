@@ -21,7 +21,7 @@ server {
 
   # Blog / Sphinx
   location /blog {
-    alias /var/www/blog/_build/html;
+    alias /var/www/blog;
     index index.html;
   }
 
