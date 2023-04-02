@@ -1,5 +1,5 @@
 [Unit]
-Description=GitHub Action Runner (nutra-server) [deploy-dev]
+Description=GitHub Action Runner (nutra) [dev]
 
 [Service]
 User=github
@@ -10,4 +10,3 @@ Environment="NTSERV_PSQL_PASSWORD=REDACTED"
 
 [Install]
 WantedBy=multi-user.target
-
