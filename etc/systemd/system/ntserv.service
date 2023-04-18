@@ -1,11 +1,11 @@
 [Unit]
-Description=Nutra Server (Sanic / PostgreSQL)
+Description=NT Server (Sanic / Postgres)
 
 [Service]
 User=github
-ExecStart=/usr/bin/env python3 -m ntserv
+ExecStart=/usr/bin/env python3 -m sanic ntserv.routes:app --host=127.0.0.1 --port=20000 --workers=2
 Restart=always
-Environment="NTSERV_ENV=dev" "NTSERV_SERVER_HOST=https://dev.nutra.tk" "NTSERV_N_WORKERS=2" "NTSERV_PSQL_PASSWORD=REDACTED" "NTSERV_JWT_SECRET=secret" "NTSERV_PROXY_SECRET=secret"
+Environment="NTSERV_ENV=dev" "NTSERV_SERVER_HOST=https://dev.nutra.tk" "NTSERV_PSQL_PASSWORD=REDACTED" "NTSERV_JWT_SECRET=secret" "NTSERV_PROXY_SECRET=secret"
 
 [Install]
 WantedBy=multi-user.target
