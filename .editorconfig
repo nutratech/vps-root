@@ -12,7 +12,6 @@ max_line_length = 100
 
 [{default,default.conf}]
 indent_size = 2
-indent_style = space
 
 
 [{nutra,*.py}]
