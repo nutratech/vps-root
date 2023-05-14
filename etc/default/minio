@@ -1,0 +1,5 @@
+MINIO_VOLUMES="/mnt/data"
+#MINIO_OPTS="--certs-dir /home/sammy/.minio/certs --console-address :9001"
+MINIO_OPTS="--address :9001 --console-address :9002"
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=F3wNKjbL
