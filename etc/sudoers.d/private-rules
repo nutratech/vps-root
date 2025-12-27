@@ -1,0 +1,4 @@
+# Allow GitHub action to restart systemctl without entering password
+#shane ALL = NOPASSWD: /bin/systemctl
+github ALL = NOPASSWD: /bin/systemctl
+
