@@ -13,6 +13,11 @@ echo ""
 echo "Running pre-flight validation on staged config..."
 TMP_NGINX_CONF=$(mktemp)
 
+# Create a temporary nginx.conf that points to STAGING_DIR instead of /etc/nginx/conf.d
+# We assume the standard include is "/etc/nginx/conf.d/*.conf"
+# We strictly replace that string with our staging path.
+sed "s|/etc/nginx/conf.d/\*\.conf|$STAGING_DIR/*.conf|g" /etc/nginx/nginx.conf > "$TMP_NGINX_CONF"
+
 if sudo nginx -t -c "$TMP_NGINX_CONF"; then
     echo "✓ Pre-flight validation passed."
     rm "$TMP_NGINX_CONF"
