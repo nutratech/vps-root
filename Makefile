@@ -80,18 +80,14 @@ endif
 
 .PHONY: test/local
 test/local: ##H @Local Test current configuration
-ifdef SUDO_USER
-	@echo "Testing locally as $(SUDO_USER)..."
-	su -P $(SUDO_USER) -c "bash scripts/deploy.sh test"
-else
 	@echo "Testing locally..."
 	bash scripts/deploy.sh test
-endif
 
 .PHONY: deploy/local
-deploy/local: ##H @Local Deploy current configuration to system
+deploy/local: ##H Deploy Nginx and Gitweb configuration (local)
 ifdef SUDO_USER
 	@echo "Deploying locally as $(SUDO_USER)..."
+	@# We need to run the entire script as the SUDO_USER to ensure they can sudo inside it
 	su -P $(SUDO_USER) -c "bash scripts/deploy.sh"
 else
 	@echo "Deploying locally..."
