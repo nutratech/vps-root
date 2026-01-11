@@ -63,6 +63,15 @@ fi
 if sudo nginx -t; then
     echo "Configuration is valid. Reloading Nginx..."
     sudo nginx -s reload
+
+    # Deploy gitweb.conf if it exists in staging
+    if [ -f "$STAGING_DIR/gitweb.conf" ]; then
+        echo "Deploying gitweb.conf..."
+        # Backup existing
+        [ -f /etc/gitweb.conf ] && sudo cp /etc/gitweb.conf $BACKUP_DIR/gitweb.conf
+        sudo cp "$STAGING_DIR/gitweb.conf" /etc/gitweb.conf
+    fi
+
     echo "✓ Deployment successful."
 else
     echo "✗ Configuration failed validation! Rolling back..."
