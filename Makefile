@@ -128,11 +128,16 @@ else
 endif
 
 .PHONY: gitweb/update-metadata
-gitweb/update-metadata: ##H @Local Bulk update repo metadata from CSV (usage: make gitweb/update-metadata CSV=repo_metadata.csv)
+gitweb/update-metadata: ##H @Local Bulk update repo metadata from CSV (usage: make gitweb/update-metadata CSV=scripts/repo_metadata.csv)
 	@echo "Updating repository metadata..."
 ifdef SUDO_USER
-	@# Run as SUDO_USER (usually gg) to have permission to write to git repos
-	su -P $(SUDO_USER) -c "python3 scripts/update_repo_metadata.py $(or $(CSV),repo_metadata.csv)"
+	@# Copy script and CSV to /tmp so SUDO_USER can read them (bypassing restricted home dirs)
+	@cp -f scripts/update_repo_metadata.py /tmp/update_repo_metadata.py
+	@cp -f $(or $(CSV),scripts/repo_metadata.csv) /tmp/repo_metadata.csv
+	@chmod +r /tmp/update_repo_metadata.py /tmp/repo_metadata.csv
+	@echo "Running update script as $(SUDO_USER)..."
+	su -P $(SUDO_USER) -c "python3 /tmp/update_repo_metadata.py /tmp/repo_metadata.csv"
+	@rm -f /tmp/update_repo_metadata.py /tmp/repo_metadata.csv
 else
-	python3 scripts/update_repo_metadata.py $(or $(CSV),repo_metadata.csv)
+	python3 scripts/update_repo_metadata.py $(or $(CSV),scripts/repo_metadata.csv)
 endif
