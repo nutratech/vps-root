@@ -67,34 +67,35 @@ certbot/nginx: ##H @Remote Run certbot on remote VPS
 	@echo "Running certbot on $(VPS_HOST)..."
 	ssh -t $(VPS) "sudo certbot --nginx"
 
+# Direct Local Deployment (No Staging)
 .PHONY: diff/local
-diff/local: _stage/local ##H @Local Show diff locally (supports SUDO_USER)
+diff/local: ##H @Local Show diff against system config
 ifdef SUDO_USER
 	@echo "Checking diff locally as $(SUDO_USER)..."
-	su -P $(SUDO_USER) -c "bash /tmp/nginx-staging/deploy.sh diff"
+	su -P $(SUDO_USER) -c "bash scripts/deploy.sh diff"
 else
 	@echo "Checking diff locally..."
-	bash ~/.nginx-staging/deploy.sh diff
-endif
-
-.PHONY: deploy/local
-deploy/local: _stage/local ##H @Local Deploy files locally (supports SUDO_USER)
-ifdef SUDO_USER
-	@echo "Deploying locally as $(SUDO_USER)..."
-	su -P $(SUDO_USER) -c "bash /tmp/nginx-staging/deploy.sh"
-else
-	@echo "Deploying locally..."
-	bash $(HOME)/.nginx-staging/deploy.sh
+	bash scripts/deploy.sh diff
 endif
 
 .PHONY: test/local
-test/local: _stage/local ##H @Local Test staged configuration locally (supports SUDO_USER)
+test/local: ##H @Local Test current configuration
 ifdef SUDO_USER
 	@echo "Testing locally as $(SUDO_USER)..."
-	su -P $(SUDO_USER) -c "bash /tmp/nginx-staging/deploy.sh test"
+	su -P $(SUDO_USER) -c "bash scripts/deploy.sh test"
 else
 	@echo "Testing locally..."
-	bash $(HOME)/.nginx-staging/deploy.sh test
+	bash scripts/deploy.sh test
+endif
+
+.PHONY: deploy/local
+deploy/local: ##H @Local Deploy current configuration to system
+ifdef SUDO_USER
+	@echo "Deploying locally as $(SUDO_USER)..."
+	su -P $(SUDO_USER) -c "bash scripts/deploy.sh"
+else
+	@echo "Deploying locally..."
+	bash scripts/deploy.sh
 endif
 
 .PHONY: certbot/local

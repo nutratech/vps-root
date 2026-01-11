@@ -1,40 +1,63 @@
 #!/bin/bash
 set -e
 
-# Staging directory expected to be populated by the caller (Makefile)
-# We default to the directory containing this script.
-STAGING_DIR=$(dirname "$(realpath "$0")")
-CONF_DIR=/etc/nginx/conf.d
+# Default to the parent directory of this script (Repo Root)
+REPO_ROOT=$(dirname "$(dirname "$(realpath "$0")")")
+NGINX_CONF_SRC="$REPO_ROOT/etc/nginx/conf.d"
+GITWEB_CONF_SRC="$REPO_ROOT/etc/gitweb.conf"
+DEST_CONF_DIR="/etc/nginx/conf.d"
 
-echo "Detected changes (diff):"
-# Diff existing vs staging. "|| true" prevents exit on diff found.
-diff -u -r --color=always "$CONF_DIR/" "$STAGING_DIR/" || true
-echo ""
+# Helper to check if file is text (decrypted)
+is_text_file() {
+    grep -qI . "$1"
+}
+
+echo "Source: $REPO_ROOT"
 
 if [ "$1" = "diff" ]; then
-    # echo "Diff check complete."
-    # rm -rf "$STAGING_DIR"
+    echo "Detected changes (diff):"
+    # We can't use simple diff -r because we need to exclude secrets.conf if encrypted
+    # So we loop through source files
+    for FILE in "$NGINX_CONF_SRC"/*.conf; do
+        BASENAME=$(basename "$FILE")
+        if [ "$BASENAME" = "secrets.conf" ] && ! is_text_file "$FILE"; then
+            echo "Skipping encrypted secrets.conf diff..."
+            continue
+        fi
+        diff -u --color=always "$DEST_CONF_DIR/$BASENAME" "$FILE" || true
+    done
     exit 0
 fi
 
 if [ "$1" = "test" ]; then
-    echo "Running pre-flight validation on staged config..."
-    TMP_NGINX_CONF=$(mktemp)
+    echo "Running pre-flight validation..."
+    TMP_WORK_DIR=$(mktemp -d)
+    TMP_NGINX_CONF="$TMP_WORK_DIR/nginx.conf"
+    TMP_CONF_D="$TMP_WORK_DIR/conf.d"
+    mkdir -p "$TMP_CONF_D"
 
-    # Create a temporary nginx.conf that points to STAGING_DIR instead of /etc/nginx/conf.d
-    # We assume the standard include is "/etc/nginx/conf.d/*.conf"
-    # We strictly replace that string with our staging path.
-    sed "s|/etc/nginx/conf.d/\*\.conf|$STAGING_DIR/*.conf|g" /etc/nginx/nginx.conf >"$TMP_NGINX_CONF"
+    # Copy config files to temp dir for testing, respecting secrets
+    for FILE in "$NGINX_CONF_SRC"/*.conf; do
+        BASENAME=$(basename "$FILE")
+        if [ "$BASENAME" = "secrets.conf" ] && ! is_text_file "$FILE"; then
+            echo "Skipping encrypted secrets.conf for test..."
+            continue
+        fi
+        cp "$FILE" "$TMP_CONF_D/"
+    done
+
+    # Generate test nginx.conf
+    # We strictly replace the include path
+    sed "s|/etc/nginx/conf.d/\*\.conf|$TMP_CONF_D/*.conf|g" /etc/nginx/nginx.conf >"$TMP_NGINX_CONF"
 
     if sudo nginx -t -c "$TMP_NGINX_CONF"; then
         echo "✓ Pre-flight validation passed."
-        # Run debug dump by default for test target
         sudo nginx -T -c "$TMP_NGINX_CONF"
-        rm "$TMP_NGINX_CONF"
+        rm -rf "$TMP_WORK_DIR"
         exit 0
     else
         echo "✗ Pre-flight validation FAILED."
-        rm "$TMP_NGINX_CONF"
+        rm -rf "$TMP_WORK_DIR"
         exit 1
     fi
 fi
@@ -43,15 +66,20 @@ fi
 BACKUP_DIR=~/nginx_backup_$(date +%s)
 echo "Creating backup at $BACKUP_DIR..."
 mkdir -p "$BACKUP_DIR"
-
-# Backup existing configs if they exist
-if sudo ls "$CONF_DIR"/*.conf >/dev/null 2>&1; then
-    sudo cp "$CONF_DIR"/*.conf "$BACKUP_DIR/"
+if sudo ls "$DEST_CONF_DIR"/*.conf >/dev/null 2>&1; then
+    sudo cp "$DEST_CONF_DIR"/*.conf "$BACKUP_DIR/"
 fi
+[ -f /etc/gitweb.conf ] && sudo cp /etc/gitweb.conf "$BACKUP_DIR/gitweb.conf"
 
 echo "Installing new configurations..."
-sudo mv "$STAGING_DIR"/*.conf "$CONF_DIR/"
-sudo rm -rf "$STAGING_DIR"
+for FILE in "$NGINX_CONF_SRC"/*.conf; do
+    BASENAME=$(basename "$FILE")
+    if [ "$BASENAME" = "secrets.conf" ] && ! is_text_file "$FILE"; then
+        echo "Skipping encrypted secrets.conf..."
+        continue
+    fi
+    sudo cp "$FILE" "$DEST_CONF_DIR/"
+done
 
 echo "Verifying configuration..."
 if [ -n "$DEBUG" ]; then
@@ -64,18 +92,17 @@ if sudo nginx -t; then
     echo "Configuration is valid. Reloading Nginx..."
     sudo nginx -s reload
 
-    # Deploy gitweb.conf if it exists in staging
-    if [ -f "$STAGING_DIR/gitweb.conf.perl" ]; then
+    # Deploy gitweb.conf if it exists
+    if [ -f "$GITWEB_CONF_SRC" ]; then
         echo "Deploying gitweb.conf..."
-        # Backup existing
-        [ -f /etc/gitweb.conf ] && sudo cp /etc/gitweb.conf $BACKUP_DIR/gitweb.conf
-        sudo cp "$STAGING_DIR/gitweb.conf.perl" /etc/gitweb.conf
+        sudo cp "$GITWEB_CONF_SRC" /etc/gitweb.conf
     fi
 
     echo "✓ Deployment successful."
 else
     echo "✗ Configuration failed validation! Rolling back..."
-    sudo cp "$BACKUP_DIR"/*.conf "$CONF_DIR/"
+    sudo cp "$BACKUP_DIR"/*.conf "$DEST_CONF_DIR/"
+    [ -f "$BACKUP_DIR/gitweb.conf" ] && sudo cp "$BACKUP_DIR/gitweb.conf" /etc/gitweb.conf
     echo "Rollback complete. Verifying rollback..."
     sudo nginx -t
     exit 1
