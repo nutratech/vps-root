@@ -31,7 +31,7 @@ if [ "$1" = "diff" ]; then
     if [ -f "$GITWEB_CONF_SRC" ]; then
         diff -u --color=always /etc/gitweb.conf "$GITWEB_CONF_SRC" || true
     fi
-    
+
     exit 0
 fi
 

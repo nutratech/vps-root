@@ -1,0 +1,3 @@
+repo_path,owner,description
+projects/git-remote-gcrypt.git,Shane,Progressive fork of `git-remote-gcrypt`
+projects/@tg-svelte/kit.git,Shane,SvelteKit fork with legacy browser support (IE11) and static builds

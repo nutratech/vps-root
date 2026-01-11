@@ -113,3 +113,26 @@ else
 	@echo "Listing certificates..."
 	sudo certbot certificates
 endif
+
+.PHONY: gitweb/set-owner
+gitweb/set-owner: ##H @Local Set gitweb.owner for all repos (usage: make gitweb/set-owner OWNER="Shane")
+ifndef OWNER
+	$(error OWNER is undefined. Usage: make gitweb/set-owner OWNER="Shane")
+endif
+ifdef SUDO_USER
+	@echo "Setting owner as $(SUDO_USER)..."
+	su -P $(SUDO_USER) -c "bash scripts/set_gitweb_owner.sh '$(OWNER)'"
+else
+	@echo "Setting owner..."
+	bash scripts/set_gitweb_owner.sh "$(OWNER)"
+endif
+
+.PHONY: gitweb/update-metadata
+gitweb/update-metadata: ##H @Local Bulk update repo metadata from CSV (usage: make gitweb/update-metadata CSV=repo_metadata.csv)
+	@echo "Updating repository metadata..."
+ifdef SUDO_USER
+	@# Run as SUDO_USER (usually gg) to have permission to write to git repos
+	su -P $(SUDO_USER) -c "python3 scripts/update_repo_metadata.py $(or $(CSV),repo_metadata.csv)"
+else
+	python3 scripts/update_repo_metadata.py $(or $(CSV),repo_metadata.csv)
+endif
