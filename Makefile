@@ -165,11 +165,10 @@ ifdef OWNER
 endif
 	@echo "Setting description to $(DESC)..."
 	ssh $(VPS) "echo '$(DESC)' > /srv/git/$(REPO_GIT)/description"
-	@echo "Configuring local remote 'helio-web'..."
-	-@git remote start helio-web ssh://$(VPS_USER)@$(VPS_HOST)/srv/git/$(REPO_GIT) 2>/dev/null || \
-	  git remote add helio-web ssh://$(VPS_USER)@$(VPS_HOST)/srv/git/$(REPO_GIT)
 	@echo "Repository initialized!"
-	@echo "  Push: git push -u helio-web main"
+	@echo "CD into the repository and run the following commands:"
+	@echo "  Add remote: git remote add helio-web ssh://$(VPS_USER)@$(VPS_HOST)/srv/git/$(REPO_GIT)"
+	@echo "  Push:       git push -u helio-web main"
 
 .PHONY: git/rename-remote
 git/rename-remote: ##H @Remote Rename/Move a repository on VPS (usage: make git/rename-remote OLD=projects/old.git NEW=@github.com/new.git)
