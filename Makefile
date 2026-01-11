@@ -146,20 +146,25 @@ else
 endif
 
 .PHONY: git/init-remote
-git/init-remote: ##H @Remote Initialize a new bare repository on VPS (usage: make git/init-remote REPO=projects/new-repo.git)
-ifndef REPO,OWNER,DESC
-	$(error REPO/OWNER/DESC are undefined: '$(REPO)/$$OWNER/$(DESC)'). Usage: make git/init-remote REPO=projects/new-repo.git OWNER="Shane" DESC="New repository")
+git/init-remote: ##H @Remote Initialize a new bare repository on VPS (usage: make git/init-remote REPO=projects/new-repo DESC="Description" [OWNER="Name"])
+ifndef REPO
+	$(error REPO is undefined. Usage: make git/init-remote REPO=projects/new-repo DESC="My Repo")
 endif
-	@echo "Initializing bare repository $(REPO) on $(VPS_HOST)..."
-	ssh $(VPS) "mkdir -p /srv/git/$(REPO) && cd /srv/git/$(REPO) && git init --bare && touch git-daemon-export-ok"
+ifndef DESC
+	$(error DESC is undefined. usage: make git/init-remote REPO=... DESC="My Repo")
+endif
+	@# Auto-append .git if missing
+	$(eval REPO_GIT := $(if $(filter %.git,$(REPO)),$(REPO),$(REPO).git))
+	@echo "Initializing bare repository $(REPO_GIT) on $(VPS_HOST)..."
+	ssh $(VPS) "mkdir -p /srv/git/$(REPO_GIT) && cd /srv/git/$(REPO_GIT) && git init --bare && touch git-daemon-export-ok"
 ifdef OWNER
 	@echo "Setting owner to $(OWNER)..."
-	ssh $(VPS) "git config --file /srv/git/$(REPO)/config gitweb.owner '$(OWNER)'"
+	ssh $(VPS) "git config --file /srv/git/$(REPO_GIT)/config gitweb.owner '$(OWNER)'"
 endif
-ifdef DESC
 	@echo "Setting description to $(DESC)..."
-	ssh $(VPS) "echo '$(DESC)' > /srv/git/$(REPO)/description"
-endif
-	@echo "Repository created. You can now push to it:"
-	@echo "  git remote add origin $(VPS_USER)@$(VPS_HOST):/srv/git/$(REPO)"
-	@echo "  git push -u origin main"
+	ssh $(VPS) "echo '$(DESC)' > /srv/git/$(REPO_GIT)/description"
+	@echo "Configuring local remote 'helio-web'..."
+	-@git remote start helio-web ssh://$(VPS_USER)@$(VPS_HOST)/srv/git/$(REPO_GIT) 2>/dev/null || \
+	  git remote add helio-web ssh://$(VPS_USER)@$(VPS_HOST)/srv/git/$(REPO_GIT)
+	@echo "Repository initialized!"
+	@echo "  Push: git push -u helio-web main"
