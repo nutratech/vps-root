@@ -157,6 +157,8 @@ endif
 	$(eval REPO_GIT := $(if $(filter %.git,$(REPO)),$(REPO),$(REPO).git))
 	@echo "Initializing bare repository $(REPO_GIT) on $(VPS_HOST)..."
 	ssh $(VPS) "mkdir -p /srv/git/$(REPO_GIT) && cd /srv/git/$(REPO_GIT) && git init --bare && touch git-daemon-export-ok"
+	@echo "Marking directory as safe..."
+	ssh $(VPS) "git config --global --add safe.directory /srv/git/$(REPO_GIT)"
 ifdef OWNER
 	@echo "Setting owner to $(OWNER)..."
 	ssh $(VPS) "git config --file /srv/git/$(REPO_GIT)/config gitweb.owner '$(OWNER)'"
