@@ -1,0 +1,18 @@
+/* Hide Description and Owner Columns */
+td.description, th.description,
+td.owner, th.owner {
+    display: none !important;
+}
+
+/* Optional: Make the project list look a bit nicer */
+table.project_list {
+    width: 100%;
+}
+
+/* Fix Logo Aspect Ratio (Gitweb defaults to 72x27, squashing square icons) */
+img.logo {
+    width: auto !important;
+    height: 32px !important;
+    margin-bottom: 4px !important; /* Raise it slightly */
+    vertical-align: middle !important;
+}
