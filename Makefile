@@ -81,8 +81,8 @@ ifdef SUDO_USER
 		echo "secrets.conf is ENCRYPTED, skipping."; \
 		rm -f /tmp/nginx-staging/secrets.conf; \
 	fi
-	# Copy gitweb.conf if it exists
-	[ -f etc/gitweb.conf ] && cp etc/gitweb.conf /tmp/nginx-staging/
+	# Copy gitweb.conf if it exists (rename to .perl to avoid Nginx *.conf include)
+	[ -f etc/gitweb.conf ] && cp etc/gitweb.conf /tmp/nginx-staging/gitweb.conf.perl
 	cp scripts/deploy.sh /tmp/nginx-staging/
 	chmod -R a+rX /tmp/nginx-staging
 else
@@ -97,7 +97,7 @@ else
 		echo "secrets.conf is ENCRYPTED, skipping."; \
 		rm -f $(HOME)/.nginx-staging/secrets.conf; \
 	fi
-	[ -f etc/gitweb.conf ] && cp etc/gitweb.conf $(HOME)/.nginx-staging/
+	[ -f etc/gitweb.conf ] && cp etc/gitweb.conf $(HOME)/.nginx-staging/gitweb.conf.perl
 	cp scripts/deploy.sh $(HOME)/.nginx-staging/
 endif
 

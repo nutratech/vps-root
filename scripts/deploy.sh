@@ -65,11 +65,11 @@ if sudo nginx -t; then
     sudo nginx -s reload
 
     # Deploy gitweb.conf if it exists in staging
-    if [ -f "$STAGING_DIR/gitweb.conf" ]; then
+    if [ -f "$STAGING_DIR/gitweb.conf.perl" ]; then
         echo "Deploying gitweb.conf..."
         # Backup existing
         [ -f /etc/gitweb.conf ] && sudo cp /etc/gitweb.conf $BACKUP_DIR/gitweb.conf
-        sudo cp "$STAGING_DIR/gitweb.conf" /etc/gitweb.conf
+        sudo cp "$STAGING_DIR/gitweb.conf.perl" /etc/gitweb.conf
     fi
 
     echo "✓ Deployment successful."
