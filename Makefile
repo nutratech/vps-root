@@ -168,3 +168,20 @@ endif
 	  git remote add helio-web ssh://$(VPS_USER)@$(VPS_HOST)/srv/git/$(REPO_GIT)
 	@echo "Repository initialized!"
 	@echo "  Push: git push -u helio-web main"
+
+.PHONY: git/rename-remote
+git/rename-remote: ##H @Remote Rename/Move a repository on VPS (usage: make git/rename-remote OLD=projects/old.git NEW=@github.com/new.git)
+ifndef OLD
+	$(error OLD is undefined. Usage: make git/rename-remote OLD=projects/old.git NEW=projects/new.git)
+endif
+ifndef NEW
+	$(error NEW is undefined. usage: make git/rename-remote OLD=... NEW=...)
+endif
+	@# Auto-append .git if missing
+	$(eval OLD_GIT := $(if $(filter %.git,$(OLD)),$(OLD),$(OLD).git))
+	$(eval NEW_GIT := $(if $(filter %.git,$(NEW)),$(NEW),$(NEW).git))
+	@echo "Moving $(OLD_GIT) to $(NEW_GIT) on $(VPS_HOST)..."
+	ssh $(VPS) "mkdir -p /srv/git/$$(dirname $(NEW_GIT)) && mv /srv/git/$(OLD_GIT) /srv/git/$(NEW_GIT)"
+	@echo "Repository moved."
+	@echo "  Don't forget to update your local remote URL:"
+	@echo "  git remote set-url helio-web ssh://$(VPS_USER)@$(VPS_HOST)/srv/git/$(NEW_GIT)"
