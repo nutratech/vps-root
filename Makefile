@@ -67,8 +67,9 @@ certbot/nginx: ##H @Remote Run certbot on remote VPS
 	@echo "Running certbot on $(VPS_HOST)..."
 	ssh -t $(VPS) "sudo certbot --nginx"
 
-.PHONY: stage/local
-stage/local: ##H @Local Stage files locally (supports SUDO_USER)
+# Internal caching/staging target (not intended for direct user use)
+.PHONY: _stage/local
+_stage/local:
 ifdef SUDO_USER
 	@echo "Staging files locally for user $(SUDO_USER)..."
 	rm -rf /tmp/nginx-staging && mkdir -p /tmp/nginx-staging
@@ -85,14 +86,23 @@ ifdef SUDO_USER
 	cp scripts/deploy.sh /tmp/nginx-staging/
 	chmod -R a+rX /tmp/nginx-staging
 else
-	@echo "Staging files locally..."
-	rm -rf ~/.nginx-staging && mkdir -p ~/.nginx-staging
-	cp -r etc/nginx/conf.d/*.conf ~/.nginx-staging/
-	cp scripts/deploy.sh ~/.nginx-staging/
+	@echo "Staging files locally (current user)..."
+	mkdir -p $(HOME)/.nginx-staging
+	rm -rf $(HOME)/.nginx-staging/*
+	cp -r etc/nginx/conf.d/*.conf $(HOME)/.nginx-staging/
+	# Only copy secrets.conf if it is decrypted (not binary)
+	@if grep -qI . etc/nginx/conf.d/secrets.conf; then \
+		echo "secrets.conf is decrypted, including it."; \
+	else \
+		echo "secrets.conf is ENCRYPTED, skipping."; \
+		rm -f $(HOME)/.nginx-staging/secrets.conf; \
+	fi
+	[ -f etc/gitweb.conf ] && cp etc/gitweb.conf $(HOME)/.nginx-staging/
+	cp scripts/deploy.sh $(HOME)/.nginx-staging/
 endif
 
 .PHONY: diff/local
-diff/local: stage/local ##H @Local Show diff locally (supports SUDO_USER)
+diff/local: _stage/local ##H @Local Show diff locally (supports SUDO_USER)
 ifdef SUDO_USER
 	@echo "Checking diff locally as $(SUDO_USER)..."
 	su -P $(SUDO_USER) -c "bash /tmp/nginx-staging/deploy.sh diff"
