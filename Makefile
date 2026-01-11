@@ -57,6 +57,16 @@ deploy/nginx: ##H @Remote Deploy staged files to remote
 	@echo "Deploying checked-in nginx config to $(VPS_HOST)..."
 	ssh -t $(VPS) "bash ~/.nginx-staging/deploy.sh"
 
+.PHONY: test/nginx
+test/nginx: ##H @Remote Test staged configuration without deploying
+	@echo "Testing staged config on $(VPS_HOST)..."
+	ssh -t $(VPS) "bash ~/.nginx-staging/deploy.sh test"
+
+.PHONY: certbot/nginx
+certbot/nginx: ##H @Remote Run certbot on remote VPS
+	@echo "Running certbot on $(VPS_HOST)..."
+	ssh -t $(VPS) "sudo certbot --nginx"
+
 .PHONY: stage/local
 stage/local: ##H @Local Stage files locally (supports SUDO_USER)
 ifdef SUDO_USER
@@ -97,4 +107,34 @@ ifdef SUDO_USER
 else
 	@echo "Deploying locally..."
 	bash ~/.nginx-staging/deploy.sh
+endif
+
+.PHONY: test/local
+test/local: stage/local ##H @Local Test staged configuration locally (supports SUDO_USER)
+ifdef SUDO_USER
+	@echo "Testing locally as $(SUDO_USER)..."
+	su -P $(SUDO_USER) -c "bash /tmp/nginx-staging/deploy.sh test"
+else
+	@echo "Testing locally..."
+	bash ~/.nginx-staging/deploy.sh test
+endif
+
+.PHONY: certbot/local
+certbot/local: ##H @Local Run certbot locally (supports SUDO_USER)
+ifdef SUDO_USER
+	@echo "Running certbot locally as $(SUDO_USER)..."
+	su -P $(SUDO_USER) -c "sudo certbot --nginx"
+else
+	@echo "Running certbot locally..."
+	sudo certbot --nginx
+endif
+
+.PHONY: certbot/list-certs
+certbot/list-certs: ##H @Local List managed certificates (supports SUDO_USER)
+ifdef SUDO_USER
+	@echo "Listing certificates as $(SUDO_USER)..."
+	su -P $(SUDO_USER) -c "sudo certbot certificates"
+else
+	@echo "Listing certificates..."
+	sudo certbot certificates
 endif
