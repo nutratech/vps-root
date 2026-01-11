@@ -1,6 +1,11 @@
 .SHELL := /bin/bash
 # .ONESHELL:
 
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
 VPS_HOST ?= dev.nutra.tk
 VPS_USER ?= gg
 
@@ -20,3 +25,20 @@ diff/nginx:
 deploy/nginx:
 	@echo "Deploying checked-in nginx config to $(VPS_HOST)..."
 	ssh -t $(VPS_USER)@$(VPS_HOST) "bash ~/nginx-staging/deploy.sh"
+
+.PHONY: stage/local
+stage/local:
+	@echo "Staging files locally..."
+	rm -rf ~/nginx-staging && mkdir -p ~/nginx-staging
+	cp -r etc/nginx/conf.d/*.conf ~/nginx-staging/
+	cp scripts/deploy.sh ~/nginx-staging/
+
+.PHONY: diff/local
+diff/local: stage/local
+	@echo "Checking diff locally..."
+	bash ~/nginx-staging/deploy.sh diff
+
+.PHONY: deploy/local
+deploy/local: stage/local
+	@echo "Deploying locally..."
+	bash ~/nginx-staging/deploy.sh
