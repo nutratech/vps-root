@@ -182,8 +182,16 @@ endif
 	@# Auto-append .git if missing
 	$(eval OLD_GIT := $(if $(filter %.git,$(OLD)),$(OLD),$(OLD).git))
 	$(eval NEW_GIT := $(if $(filter %.git,$(NEW)),$(NEW),$(NEW).git))
-	@echo "Moving $(OLD_GIT) to $(NEW_GIT) on $(VPS_HOST)..."
-	ssh $(VPS) "mkdir -p /srv/git/$$(dirname $(NEW_GIT)) && mv /srv/git/$(OLD_GIT) /srv/git/$(NEW_GIT)"
-	@echo "Repository moved."
-	@echo "  Don't forget to update your local remote URL:"
-	@echo "  git remote set-url helio-web ssh://$(VPS_USER)@$(VPS_HOST)/srv/git/$(NEW_GIT)"
+	@if [ "$(OLD_GIT)" != "$(NEW_GIT)" ]; then \
+		echo "Moving $(OLD_GIT) to $(NEW_GIT) on $(VPS_HOST)..."; \
+		ssh $(VPS) "mkdir -p /srv/git/$$(dirname $(NEW_GIT)) && mv /srv/git/$(OLD_GIT) /srv/git/$(NEW_GIT)"; \
+		echo "Repository moved."; \
+	else \
+		echo "Source and destination are the same. Skipping move."; \
+	fi
+	@echo "Marking directory as safe..."
+	ssh $(VPS) "git config --global --add safe.directory /srv/git/$(NEW_GIT)"
+	@if [ "$(OLD_GIT)" != "$(NEW_GIT)" ]; then \
+		echo "  Don't forget to update your local remote URL:"; \
+	fi
+	echo "  git remote set-url helio-web ssh://$(VPS_USER)@$(VPS_HOST)/srv/git/$(NEW_GIT)"
