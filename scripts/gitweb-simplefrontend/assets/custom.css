@@ -1,6 +1,8 @@
-/* Hide Description and Owner Columns */
-td.description, th.description,
-td.owner, th.owner {
+/* Hide Description (Col 2) and Owner (Col 3) Columns */
+table.project_list th:nth-child(2),
+table.project_list td:nth-child(2),
+table.project_list th:nth-child(3),
+table.project_list td:nth-child(3) {
     display: none !important;
 }
 
@@ -13,6 +15,7 @@ table.project_list {
 img.logo {
     width: auto !important;
     height: 32px !important;
-    margin-bottom: 4px !important; /* Raise it slightly */
+    position: relative !important;
+    top: -4px !important; /* Force it up */
     vertical-align: middle !important;
 }
