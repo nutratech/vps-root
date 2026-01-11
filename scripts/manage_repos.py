@@ -235,56 +235,76 @@ def cmd_sync(args, remote):
         
     print(f"Scanning {remote}:{GIT_ROOT}...")
     
-    # 1. Find all .git directories
-    # We look for something ending in .git. 
-    # Use -maxdepth 3 to catch projects/foo.git but avoid deep nesting
-    find_cmd = ['ssh', remote, f'find {GIT_ROOT} -maxdepth 3 -name "*.git" -type d']
-    try:
-        res = subprocess.check_output(find_cmd, universal_newlines=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Error scanning remote: {e}")
-        sys.exit(1)
-        
-    paths = [p.strip() for p in res.splitlines() if p.strip()]
+    # Remote python script to gather all metadata in one go
+    remote_script = f"""
+import os, json, subprocess
+
+root = "{GIT_ROOT}"
+results = {{}}
+
+for dirpath, dirnames, filenames in os.walk(root):
+    for d in dirnames:
+        if d.endswith('.git'):
+            full_path = os.path.join(dirpath, d)
+            rel_path = os.path.relpath(full_path, root)
+            
+            # Get description
+            desc = ""
+            desc_file = os.path.join(full_path, 'description')
+            if os.path.exists(desc_file):
+                try:
+                    with open(desc_file, 'r') as f:
+                        desc = f.read().strip()
+                        if "Unnamed repository" in desc: desc = ""
+                except: pass
+            
+            # Get owner/origin via git config
+            owner = ""
+            origin = ""
+            try:
+                # We use git config to read keys. 
+                # Note: 'git config' might fail if safe.directory issues, but usually fine for reading files directly if we parse?
+                # Safer to use git command.
+                # Only run if directory seems valid.
+                cmd = ['git', 'config', '--file', os.path.join(full_path, 'config'), '--list']
+                out = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, universal_newlines=True)
+                for line in out.splitlines():
+                    if line.startswith('gitweb.owner='):
+                        owner = line.split('=', 1)[1]
+                    if line.startswith('remote.origin.url='):
+                        origin = line.split('=', 1)[1]
+            except:
+                pass
+                
+            results[rel_path] = {{
+                'description': desc,
+                'owner': owner,
+                'remotes': {{'origin': origin}} if origin else {{}}
+            }}
+            
+print(json.dumps(results))
+"""
     
+    # Run the script remotely via SSH
+    cmd = ['ssh', remote, 'python3', '-c', shlex.quote(remote_script)]
+    
+    try:
+        output = subprocess.check_output(cmd, universal_newlines=True)
+        remote_data = json.loads(output)
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing remote fetch: {e}")
+        return
+    except json.JSONDecodeError as e:
+        print(f"Error parsing remote response: {e}")
+        print("Raw output:", output)
+        return
+
+    # Update local data
     data = load_repos()
     updated_count = 0
     new_count = 0
     
-    for full_path in paths:
-        if not full_path.startswith(GIT_ROOT):
-            continue
-            
-        rel_path = os.path.relpath(full_path, GIT_ROOT)
-        # normalize
-        if not rel_path.endswith('.git'): rel_path += '.git'
-        
-        # Check if we assume 'projects/' prefix if it's missing?
-        # The script generally enforces strict paths.
-        
-        print(f"Processing {rel_path}...")
-        
-        # Get Description
-        description = ""
-        try:
-            # cat description file. Silence stderr in case missing.
-            desc_cmd = ['ssh', remote, f'cat {shlex.quote(os.path.join(full_path, "description"))}']
-            description = subprocess.check_output(desc_cmd, stderr=subprocess.DEVNULL, universal_newlines=True).strip()
-            # Default git description is usually "Unnamed repository..."
-            if "Unnamed repository" in description:
-                description = ""
-        except subprocess.CalledProcessError:
-            pass
-            
-        # Get Owner
-        owner = ""
-        try:
-            owner_cmd = ['ssh', remote, f'git config --file {shlex.quote(os.path.join(full_path, "config"))} gitweb.owner']
-            owner = subprocess.check_output(owner_cmd, stderr=subprocess.DEVNULL, universal_newlines=True).strip()
-        except subprocess.CalledProcessError:
-            pass
-            
-        # Update Data
+    for rel_path, info in remote_data.items():
         if rel_path not in data:
             data[rel_path] = {}
             new_count += 1
@@ -292,28 +312,14 @@ def cmd_sync(args, remote):
         else:
             updated_count += 1
             
-        # Only overwrite if we found something useful, or if we want to sync truth?
-        # Let's trust remote as truth for now.
-        if description: 
-            data[rel_path]['description'] = description
-        if owner:
-            data[rel_path]['owner'] = owner
-            
-        # We can't easily guess origin URL from the bare repo unless we look at the config 
-        # but bare repos usually don't have 'origin' remotes that point upstream, 
-        # unless they were cloned with --mirror.
-        # Let's check for 'remote.origin.url'
-        try:
-            origin_cmd = ['ssh', remote, f'git config --file {shlex.quote(os.path.join(full_path, "config"))} remote.origin.url']
-            origin = subprocess.check_output(origin_cmd, stderr=subprocess.DEVNULL, universal_newlines=True).strip()
-            if origin:
-                if 'remotes' not in data[rel_path]: data[rel_path]['remotes'] = {}
-                data[rel_path]['remotes']['origin'] = origin
-        except:
-            pass
-            
+        data[rel_path]['description'] = info['description']
+        data[rel_path]['owner'] = info['owner']
+        if info.get('remotes'):
+            if 'remotes' not in data[rel_path]: data[rel_path]['remotes'] = {}
+            data[rel_path]['remotes'].update(info['remotes'])
+
     save_repos(data)
-    print(f"\nSync complete. Added {new_count}, Scanned {updated_count}.")
+    print(f"\nSync complete. Added {new_count}, Scanned {updated_count}. (Single SSH connection used)")
 
 def cmd_list(args, remote):
     data = migrate_csv_if_needed()

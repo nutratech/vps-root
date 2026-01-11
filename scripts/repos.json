@@ -8,5 +8,37 @@
     "owner": "Shane",
     "description": "SvelteKit fork with legacy browser support (IE11) and static builds",
     "remotes": {}
+  },
+  "gamesguru/ffpass.git": {
+    "description": "CLI to export/manage Firefox & Quantum passwords.",
+    "owner": "Shane J"
+  },
+  "gamesguru/vps-root.git": {
+    "description": "Configuration files for setting up nginx and more",
+    "owner": "Shane J"
+  },
+  "gamesguru/git-remote-gcrypt.git": {
+    "description": "Progressive fork of `git-remote-gcrypt`",
+    "owner": "Shane J"
+  },
+  "@nutratech/usda-sqlite.git": {
+    "description": "Portable USDA database, based on SR28",
+    "owner": "Shane J"
+  },
+  "@nutratech/cli.git": {
+    "description": "CLI for SR28 nutrient DB, tracking/calculations",
+    "owner": "Shane J"
+  },
+  "@nutratech/nt-sqlite.git": {
+    "description": "Portable USDA database, based on SR28",
+    "owner": "Shane J"
+  },
+  "@tg-svelte/kit.git": {
+    "description": "SvelteKit fork with legacy browser support (IE11) and static builds",
+    "owner": "Shane J"
+  },
+  "@tg-svelte/website-template-svkit-v2-legacy.git": {
+    "description": "SvelteKit v2 website sample/template with IE11 legacy support configuration.",
+    "owner": "Shane J"
   }
 }
