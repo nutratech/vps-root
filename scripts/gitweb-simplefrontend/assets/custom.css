@@ -1,34 +1,3 @@
-/* Hide Description (Col 2) ONLY */
-table.project_list th:nth-child(2),
-table.project_list td:nth-child(2) {
-    display: none !important;
-}
-
-/* Owner Column (Col 3): Restore visibility & Replace Text */
-table.project_list th:nth-child(3),
-table.project_list td:nth-child(3) {
-    display: table-cell !important;
-}
-
-/* CSS Hack to replace "www-data" with "Shane" */
-table.project_list td:nth-child(3) {
-    visibility: hidden; /* Hide original text */
-    position: relative;
-    width: 100px; /* Ensure enough space */
-}
-table.project_list td:nth-child(3)::after {
-    visibility: visible;
-    position: absolute;
-    top: 5px; /* Adjust vertical alignment */
-    left: 0;
-    content: "Shane"; /* The name you want */
-}
-
-/* Optional: Make the project list look a bit nicer */
-table.project_list {
-    width: 100%;
-}
-
 /* Fix Logo Aspect Ratio (Gitweb defaults to 72x27, squashing square icons) */
 img.logo {
     width: auto !important;
@@ -36,12 +5,4 @@ img.logo {
     position: relative !important;
     top: -4px !important; /* Force it up */
     vertical-align: middle !important;
-}
-
-/* Add header to the last column (Links) which is normally empty */
-table.project_list th:last-child {
-    text-align: center; /* Optional: Center the actions */
-}
-table.project_list th:last-child::after {
-    content: "Actions";
 }
