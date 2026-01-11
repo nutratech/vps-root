@@ -62,6 +62,23 @@ test/nginx: ##H @Remote Test staged configuration without deploying
 	@echo "Testing staged config on $(VPS_HOST)..."
 	ssh -t $(VPS) "bash ~/.nginx-staging/deploy.sh test"
 
+.PHONY: deploy/klaus
+deploy/klaus: ##H @Remote Deploy Klaus (systemd + nginx) and install deps
+	@echo "Uploading deployment bundle..."
+	tar cz -C etc/systemd/system klaus.service -C ../../nginx/conf.d klaus.conf | ssh $(VPS) "cat > /tmp/klaus-deploy.tgz"
+	@echo "Installing on $(VPS_HOST)..."
+	ssh -t $(VPS) "cd /tmp && tar xz -f klaus-deploy.tgz && \
+		sudo pip3 install klaus gunicorn && \
+		sudo mv klaus.service /etc/systemd/system/klaus.service && \
+		sudo systemctl daemon-reload && \
+		sudo systemctl enable --now klaus && \
+		sudo mv /etc/nginx/conf.d/git-http.conf /etc/nginx/conf.d/git-http.conf.disabled 2>/dev/null || true && \
+		sudo mv klaus.conf /etc/nginx/conf.d/klaus.conf && \
+		sudo nginx -t && \
+		sudo systemctl reload nginx && \
+		rm klaus-deploy.tgz"
+	@echo "Klaus deployed!"
+
 .PHONY: certbot/nginx
 certbot/nginx: ##H @Remote Run certbot on remote VPS
 	@echo "Running certbot on $(VPS_HOST)..."
