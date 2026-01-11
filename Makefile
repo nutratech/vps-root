@@ -121,7 +121,10 @@ ifndef OWNER
 endif
 ifdef SUDO_USER
 	@echo "Setting owner as $(SUDO_USER)..."
-	su -P $(SUDO_USER) -c "bash scripts/set_gitweb_owner.sh '$(OWNER)'"
+	@cp -f scripts/set_gitweb_owner.sh /tmp/set_gitweb_owner.sh
+	@chmod +rx /tmp/set_gitweb_owner.sh
+	su -P $(SUDO_USER) -c "cd /tmp && bash /tmp/set_gitweb_owner.sh '$(OWNER)'"
+	@rm -f /tmp/set_gitweb_owner.sh
 else
 	@echo "Setting owner..."
 	bash scripts/set_gitweb_owner.sh "$(OWNER)"
