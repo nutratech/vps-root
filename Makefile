@@ -6,39 +6,95 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
+.PHONY: _help
+_help:
+	@printf "\nUsage: make <command>, valid commands:\n\n"
+	@awk 'BEGIN {FS = ":.*?##H "}; \
+			/##H/ && !/@awk.*?##H/ { \
+					target=$$1; doc=$$2; \
+					category="General"; \
+					if (doc ~ /^@/) { \
+							category=substr(doc, 2, index(doc, " ")-2); \
+							doc=substr(doc, index(doc, " ")+1); \
+					} \
+					if (length(target) > max) max = length(target); \
+					targets[NR] = target; docs[NR] = doc; cats[NR] = category; \
+			} \
+			END { \
+					last_cat = ""; \
+					for (i = 1; i <= NR; i++) { \
+							if (cats[i] != "") { \
+									if (cats[i] != last_cat) { \
+											printf "\n\033[1;36m%s Commands:\033[0m\n", cats[i]; \
+											last_cat = cats[i]; \
+									} \
+									printf "  \033[1;34m%-*s\033[0m  %s\n", max, targets[i], docs[i]; \
+							} \
+					} \
+					print ""; \
+			}' $(MAKEFILE_LIST)
+
+
 VPS_HOST ?= dev.nutra.tk
 VPS_USER ?= gg
 
+VPS := $(VPS_USER)@$(VPS_HOST)
+
 .PHONY: stage/nginx
-stage/nginx:
+stage/nginx: ##H @Remote Stage files on the remote VPS
 	@echo "Staging files on $(VPS_HOST)..."
-	ssh $(VPS_USER)@$(VPS_HOST) 'rm -rf ~/nginx-staging && mkdir -p ~/nginx-staging'
-	scp -q -r etc/nginx/conf.d/*.conf $(VPS_USER)@$(VPS_HOST):~/nginx-staging/
-	scp -q scripts/deploy.sh $(VPS_USER)@$(VPS_HOST):~/nginx-staging/
+	ssh $(VPS) 'rm -rf ~/.nginx-staging && mkdir -p ~/.nginx-staging'
+	scp -q -r etc/nginx/conf.d/*.conf $(VPS):~/.nginx-staging/
+	scp -q scripts/deploy.sh $(VPS):~/.nginx-staging/
 
 .PHONY: diff/nginx
-diff/nginx:
+diff/nginx: ##H @Remote Show diff between local and remote
 	@echo "Checking diff against $(VPS_HOST)..."
-	ssh -t $(VPS_USER)@$(VPS_HOST) "bash ~/nginx-staging/deploy.sh diff"
+	ssh -t $(VPS) "bash ~/.nginx-staging/deploy.sh diff"
 
 .PHONY: deploy/nginx
-deploy/nginx:
+deploy/nginx: ##H @Remote Deploy staged files to remote
 	@echo "Deploying checked-in nginx config to $(VPS_HOST)..."
-	ssh -t $(VPS_USER)@$(VPS_HOST) "bash ~/nginx-staging/deploy.sh"
+	ssh -t $(VPS) "bash ~/.nginx-staging/deploy.sh"
 
 .PHONY: stage/local
-stage/local:
+stage/local: ##H @Local Stage files locally (supports SUDO_USER)
+ifdef SUDO_USER
+	@echo "Staging files locally for user $(SUDO_USER)..."
+	rm -rf /tmp/nginx-staging && mkdir -p /tmp/nginx-staging
+	cp -r etc/nginx/conf.d/*.conf /tmp/nginx-staging/
+	# Only copy secrets.conf if it is decrypted (not binary)
+	@if grep -qI . etc/nginx/conf.d/secrets.conf; then \
+		echo "secrets.conf is decrypted, including it."; \
+	else \
+		echo "secrets.conf is ENCRYPTED, skipping."; \
+		rm -f /tmp/nginx-staging/secrets.conf; \
+	fi
+	cp scripts/deploy.sh /tmp/nginx-staging/
+	chmod -R a+rX /tmp/nginx-staging
+else
 	@echo "Staging files locally..."
-	rm -rf ~/nginx-staging && mkdir -p ~/nginx-staging
-	cp -r etc/nginx/conf.d/*.conf ~/nginx-staging/
-	cp scripts/deploy.sh ~/nginx-staging/
+	rm -rf ~/.nginx-staging && mkdir -p ~/.nginx-staging
+	cp -r etc/nginx/conf.d/*.conf ~/.nginx-staging/
+	cp scripts/deploy.sh ~/.nginx-staging/
+endif
 
 .PHONY: diff/local
-diff/local: stage/local
+diff/local: stage/local ##H @Local Show diff locally (supports SUDO_USER)
+ifdef SUDO_USER
+	@echo "Checking diff locally as $(SUDO_USER)..."
+	su -P $(SUDO_USER) -c "bash /tmp/nginx-staging/deploy.sh diff"
+else
 	@echo "Checking diff locally..."
-	bash ~/nginx-staging/deploy.sh diff
+	bash ~/.nginx-staging/deploy.sh diff
+endif
 
 .PHONY: deploy/local
-deploy/local: stage/local
+deploy/local: stage/local ##H @Local Deploy files locally (supports SUDO_USER)
+ifdef SUDO_USER
+	@echo "Deploying locally as $(SUDO_USER)..."
+	su -P $(SUDO_USER) -c "bash /tmp/nginx-staging/deploy.sh"
+else
 	@echo "Deploying locally..."
-	bash ~/nginx-staging/deploy.sh
+	bash ~/.nginx-staging/deploy.sh
+endif

@@ -2,12 +2,13 @@
 set -e
 
 # Staging directory expected to be populated by the caller (Makefile)
-STAGING_DIR=~/nginx-staging
+# We default to the directory containing this script.
+STAGING_DIR=$(dirname "$(realpath "$0")")
 CONF_DIR=/etc/nginx/conf.d
 
 echo "Detected changes (diff):"
 # Diff existing vs staging. "|| true" prevents exit on diff found.
-sudo diff -u -r --color=always "$CONF_DIR/" "$STAGING_DIR/" || true
+diff -u -r --color=always "$CONF_DIR/" "$STAGING_DIR/" || true
 echo ""
 
 if [ "$1" = "diff" ]; then
@@ -31,6 +32,12 @@ sudo mv "$STAGING_DIR"/*.conf "$CONF_DIR/"
 sudo rm -rf "$STAGING_DIR"
 
 echo "Verifying configuration..."
+if [ -n "$DEBUG" ]; then
+    echo "Debug mode enabled: running nginx -T"
+    sudo nginx -t -c /etc/nginx/nginx.conf || true
+    sudo nginx -T -c /etc/nginx/nginx.conf
+fi
+
 if sudo nginx -t; then
     echo "Configuration is valid. Reloading Nginx..."
     sudo nginx -s reload
