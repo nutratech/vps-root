@@ -67,40 +67,6 @@ certbot/nginx: ##H @Remote Run certbot on remote VPS
 	@echo "Running certbot on $(VPS_HOST)..."
 	ssh -t $(VPS) "sudo certbot --nginx"
 
-# Internal caching/staging target (not intended for direct user use)
-.PHONY: _stage/local
-_stage/local:
-ifdef SUDO_USER
-	@echo "Staging files locally for user $(SUDO_USER)..."
-	rm -rf /tmp/nginx-staging && mkdir -p /tmp/nginx-staging
-	cp -r etc/nginx/conf.d/*.conf /tmp/nginx-staging/
-	# Only copy secrets.conf if it is decrypted (not binary)
-	@if grep -qI . etc/nginx/conf.d/secrets.conf; then \
-		echo "secrets.conf is decrypted, including it."; \
-	else \
-		echo "secrets.conf is ENCRYPTED, skipping."; \
-		rm -f /tmp/nginx-staging/secrets.conf; \
-	fi
-	# Copy gitweb.conf if it exists (rename to .perl to avoid Nginx *.conf include)
-	[ -f etc/gitweb.conf ] && cp etc/gitweb.conf /tmp/nginx-staging/gitweb.conf.perl
-	cp scripts/deploy.sh /tmp/nginx-staging/
-	chmod -R a+rX /tmp/nginx-staging
-else
-	@echo "Staging files locally (current user)..."
-	mkdir -p $(HOME)/.nginx-staging
-	rm -rf $(HOME)/.nginx-staging/*
-	cp -r etc/nginx/conf.d/*.conf $(HOME)/.nginx-staging/
-	# Only copy secrets.conf if it is decrypted (not binary)
-	@if grep -qI . etc/nginx/conf.d/secrets.conf; then \
-		echo "secrets.conf is decrypted, including it."; \
-	else \
-		echo "secrets.conf is ENCRYPTED, skipping."; \
-		rm -f $(HOME)/.nginx-staging/secrets.conf; \
-	fi
-	[ -f etc/gitweb.conf ] && cp etc/gitweb.conf $(HOME)/.nginx-staging/gitweb.conf.perl
-	cp scripts/deploy.sh $(HOME)/.nginx-staging/
-endif
-
 .PHONY: diff/local
 diff/local: _stage/local ##H @Local Show diff locally (supports SUDO_USER)
 ifdef SUDO_USER
@@ -112,23 +78,23 @@ else
 endif
 
 .PHONY: deploy/local
-deploy/local: stage/local ##H @Local Deploy files locally (supports SUDO_USER)
+deploy/local: _stage/local ##H @Local Deploy files locally (supports SUDO_USER)
 ifdef SUDO_USER
 	@echo "Deploying locally as $(SUDO_USER)..."
 	su -P $(SUDO_USER) -c "bash /tmp/nginx-staging/deploy.sh"
 else
 	@echo "Deploying locally..."
-	bash ~/.nginx-staging/deploy.sh
+	bash $(HOME)/.nginx-staging/deploy.sh
 endif
 
 .PHONY: test/local
-test/local: stage/local ##H @Local Test staged configuration locally (supports SUDO_USER)
+test/local: _stage/local ##H @Local Test staged configuration locally (supports SUDO_USER)
 ifdef SUDO_USER
 	@echo "Testing locally as $(SUDO_USER)..."
 	su -P $(SUDO_USER) -c "bash /tmp/nginx-staging/deploy.sh test"
 else
 	@echo "Testing locally..."
-	bash ~/.nginx-staging/deploy.sh test
+	bash $(HOME)/.nginx-staging/deploy.sh test
 endif
 
 .PHONY: certbot/local
