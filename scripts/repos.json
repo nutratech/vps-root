@@ -1,0 +1,12 @@
+{
+  "projects/git-remote-gcrypt.git": {
+    "owner": "Shane",
+    "description": "Progressive fork of `git-remote-gcrypt`",
+    "remotes": {}
+  },
+  "projects/@tg-svelte/kit.git": {
+    "owner": "Shane",
+    "description": "SvelteKit fork with legacy browser support (IE11) and static builds",
+    "remotes": {}
+  }
+}
