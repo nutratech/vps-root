@@ -136,7 +136,7 @@ ifdef SUDO_USER
 	@cp -f $(or $(CSV),scripts/repo_metadata.csv) /tmp/repo_metadata.csv
 	@chmod +r /tmp/update_repo_metadata.py /tmp/repo_metadata.csv
 	@echo "Running update script as $(SUDO_USER)..."
-	su -P $(SUDO_USER) -c "python3 /tmp/update_repo_metadata.py /tmp/repo_metadata.csv"
+	su -P $(SUDO_USER) -c "cd /tmp && python3 /tmp/update_repo_metadata.py /tmp/repo_metadata.csv"
 	@rm -f /tmp/update_repo_metadata.py /tmp/repo_metadata.csv
 else
 	python3 scripts/update_repo_metadata.py $(or $(CSV),scripts/repo_metadata.csv)
