@@ -187,3 +187,17 @@ endif
 	ssh $(VPS) "git config --global --add safe.directory /srv/git/$(NEW_GIT)"
 	@echo "Don't forget to update your local remote URL:"
 	@echo "git remote set-url helio-web ssh://$(VPS_USER)@$(VPS_HOST)/srv/git/$(NEW_GIT)"
+
+.PHONY: git/set-head
+git/set-head: ##H @Remote Set default branch (HEAD) for a repo (usage: make git/set-head REPO=... BRANCH=main)
+ifndef REPO
+	$(error REPO is undefined. Usage: make git/set-head REPO=projects/repo.git BRANCH=main)
+endif
+ifndef BRANCH
+	$(error BRANCH is undefined. Usage: make git/set-head REPO=... BRANCH=main)
+endif
+	@# Auto-append .git if missing
+	$(eval REPO_GIT := $(if $(filter %.git,$(REPO)),$(REPO),$(REPO).git))
+	@echo "Setting HEAD of $(REPO_GIT) to refs/heads/$(BRANCH)..."
+	ssh $(VPS) "git --git-dir=/srv/git/$(REPO_GIT) symbolic-ref HEAD refs/heads/$(BRANCH)"
+	@echo "HEAD updated."
