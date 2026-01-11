@@ -26,6 +26,12 @@ if [ "$1" = "diff" ]; then
         fi
         diff -u --color=always "$DEST_CONF_DIR/$BASENAME" "$FILE" || true
     done
+
+    # Diff gitweb.conf
+    if [ -f "$GITWEB_CONF_SRC" ]; then
+        diff -u --color=always /etc/gitweb.conf "$GITWEB_CONF_SRC" || true
+    fi
+    
     exit 0
 fi
 
@@ -96,6 +102,13 @@ if sudo nginx -t; then
     if [ -f "$GITWEB_CONF_SRC" ]; then
         echo "Deploying gitweb.conf..."
         sudo cp "$GITWEB_CONF_SRC" /etc/gitweb.conf
+    fi
+
+    # Deploy Gitweb frontend assets
+    if [ -d "$REPO_ROOT/scripts/gitweb-simplefrontend" ]; then
+        echo "Deploying Gitweb frontend..."
+        sudo cp -r "$REPO_ROOT/scripts/gitweb-simplefrontend/"* /srv/git/
+        sudo chown -R www-data:www-data /srv/git/
     fi
 
     echo "✓ Deployment successful."
