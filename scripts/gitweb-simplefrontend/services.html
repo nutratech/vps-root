@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+    <head>
+        <title>NutraTech Git Services</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                max-width: 800px;
+                margin: 2rem auto;
+                line-height: 1.6;
+                padding: 0 1rem;
+                color: #333;
+            }
+            h1 {
+                border-bottom: 2px solid #eee;
+                padding-bottom: 0.5rem;
+            }
+            .service {
+                margin-bottom: 1.5rem;
+                padding: 1.5rem;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background: #f9f9f9;
+            }
+            .service:hover {
+                background: #fff;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                border-color: #ccc;
+            }
+            .service h2 {
+                margin-top: 0;
+                margin-bottom: 0.5rem;
+            }
+            .service a {
+                text-decoration: none;
+                color: #0066cc;
+            }
+            .service a:hover {
+                text-decoration: underline;
+            }
+            .desc {
+                margin-bottom: 0.5rem;
+            }
+            .meta {
+                font-size: 0.85em;
+                color: #666;
+            }
+            .tag {
+                display: inline-block;
+                padding: 2px 8px;
+                background: #e0e0e0;
+                border-radius: 12px;
+                font-size: 0.8em;
+                margin-right: 0.5rem;
+                color: #444;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Git Services Map</h1>
+        <p class="meta">Generated automatically from Nginx configuration.</p>
+
+        <div class="service">
+            <h2><a href="/v1">/v1</a></h2>
+            <div class="desc">Original Gitweb (Standard)</div>
+        </div>
+        <div class="service">
+            <h2><a href="/v2">/v2</a></h2>
+            <div class="desc">Simple Frontend (Theme only)</div>
+        </div>
+        <div class="service">
+            <h2><a href="/v3">/v3</a></h2>
+            <div class="desc">Gitea (Proxy to localhost:3000)</div>
+        </div>
+    </body>
+</html>

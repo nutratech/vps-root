@@ -43,6 +43,7 @@ VPS := $(VPS_USER)@$(VPS_HOST)
 .PHONY: stage/nginx
 stage/nginx: ##H @Remote Stage files on the remote VPS
 	@echo "Staging files on $(VPS_HOST)..."
+	python3 scripts/gen_services_map.py
 	ssh $(VPS) 'rm -rf ~/.nginx-staging && mkdir -p ~/.nginx-staging/etc/nginx/conf.d ~/.nginx-staging/scripts/gitweb-simplefrontend'
 	scp -q -r etc/nginx/conf.d/*.conf $(VPS):~/.nginx-staging/etc/nginx/conf.d/
 	scp -q etc/gitweb.conf $(VPS):~/.nginx-staging/etc/gitweb.conf
