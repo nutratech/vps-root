@@ -43,24 +43,26 @@ VPS := $(VPS_USER)@$(VPS_HOST)
 .PHONY: stage/nginx
 stage/nginx: ##H @Remote Stage files on the remote VPS
 	@echo "Staging files on $(VPS_HOST)..."
-	ssh $(VPS) 'rm -rf ~/.nginx-staging && mkdir -p ~/.nginx-staging'
-	scp -q -r etc/nginx/conf.d/*.conf $(VPS):~/.nginx-staging/
-	scp -q scripts/deploy.sh $(VPS):~/.nginx-staging/
+	ssh $(VPS) 'rm -rf ~/.nginx-staging && mkdir -p ~/.nginx-staging/etc/nginx/conf.d ~/.nginx-staging/scripts/gitweb-simplefrontend'
+	scp -q -r etc/nginx/conf.d/*.conf $(VPS):~/.nginx-staging/etc/nginx/conf.d/
+	scp -q etc/gitweb.conf $(VPS):~/.nginx-staging/etc/gitweb.conf
+	scp -q -r scripts/gitweb-simplefrontend/* $(VPS):~/.nginx-staging/scripts/gitweb-simplefrontend/
+	scp -q scripts/deploy.sh $(VPS):~/.nginx-staging/scripts/deploy.sh
 
 .PHONY: diff/nginx
 diff/nginx: ##H @Remote Show diff between local and remote
 	@echo "Checking diff against $(VPS_HOST)..."
-	ssh -t $(VPS) "bash ~/.nginx-staging/deploy.sh diff"
+	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh diff"
 
 .PHONY: deploy/nginx
 deploy/nginx: ##H @Remote Deploy staged files to remote
 	@echo "Deploying checked-in nginx config to $(VPS_HOST)..."
-	ssh -t $(VPS) "bash ~/.nginx-staging/deploy.sh"
+	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh"
 
 .PHONY: test/nginx
 test/nginx: ##H @Remote Test staged configuration without deploying
 	@echo "Testing staged config on $(VPS_HOST)..."
-	ssh -t $(VPS) "bash ~/.nginx-staging/deploy.sh test"
+	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh test"
 
 .PHONY: certbot/nginx
 certbot/nginx: ##H @Remote Run certbot on remote VPS
