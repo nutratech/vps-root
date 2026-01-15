@@ -28,9 +28,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <body>
     <h1>Git Services Map</h1>
     <p class="meta">Generated automatically from Nginx configuration.</p>
-    
+
     {services_html}
-    
+
 </body>
 </html>"""
 
