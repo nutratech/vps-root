@@ -57,6 +57,7 @@ diff/nginx: ##H @Remote Show diff between local and remote
 
 .PHONY: deploy/nginx
 deploy/nginx: ##H @Remote Deploy staged files to remote
+deploy/nginx: stage/nginx test/nginx diff/nginx
 	@echo "Deploying checked-in nginx config to $(VPS_HOST)..."
 	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh"
 
