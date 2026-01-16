@@ -7,3 +7,8 @@ etc/postgresql/**/pg_hba.conf filter=git-crypt diff=git-crypt
 etc/sudoers.d/** filter=git-crypt diff=git-crypt
 etc/systemd/system/*.service filter=git-crypt diff=git-crypt
 etc/postfix/main.cf filter=git-crypt diff=git-crypt
+
+/etc/gitea/app.ini filter=git-crypt diff=git-crypt
+
+opt/stalwart/etc/config.toml filter=git-crypt diff=git-crypt
+
