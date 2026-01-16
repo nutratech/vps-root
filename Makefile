@@ -66,6 +66,26 @@ test/nginx: ##H @Remote Test staged configuration without deploying
 	@echo "Testing staged config on $(VPS_HOST)..."
 	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh test"
 
+.PHONY: deploy/klaus
+deploy/klaus: ##H @Remote Deploy Klaus (systemd + nginx) and install deps
+	@echo "Uploading deployment bundle..."
+	tar cz -C etc/systemd/system klaus.service -C ../../nginx/conf.d klaus.conf -C ../../../scripts klaus_app.py | ssh $(VPS) "cat > /tmp/klaus-deploy.tgz"
+	@echo "Installing on $(VPS_HOST)..."
+	ssh -t $(VPS) "cd /tmp && tar xz -f klaus-deploy.tgz && \
+		sudo bash -c '# apt-get update && apt-get install -y universal-ctags && \
+		pip3 install klaus gunicorn markdown && \
+		mv klaus_app.py /usr/local/bin/klaus_app.py && \
+		mv klaus.service /etc/systemd/system/klaus.service && \
+		systemctl daemon-reload && \
+		systemctl enable --now klaus && \
+		systemctl restart klaus && \
+		mv /etc/nginx/conf.d/git-http.conf /etc/nginx/conf.d/git-http.conf.disabled 2>/dev/null || true && \
+		mv klaus.conf /etc/nginx/conf.d/klaus.conf && \
+		nginx -t && \
+		systemctl reload nginx' && \
+		rm klaus-deploy.tgz"
+	@echo "Klaus deployed!"
+
 .PHONY: certbot/nginx
 certbot/nginx: ##H @Remote Run certbot on remote VPS
 	@echo "Running certbot on $(VPS_HOST)..."
@@ -118,89 +138,40 @@ else
 	sudo certbot certificates
 endif
 
-.PHONY: gitweb/set-owner
-gitweb/set-owner: ##H @Local Set gitweb.owner for all repos (usage: make gitweb/set-owner OWNER="Shane")
-ifndef OWNER
-	$(error OWNER is undefined. Usage: make gitweb/set-owner OWNER="Shane")
-endif
-ifdef SUDO_USER
-	@echo "Setting owner as $(SUDO_USER)..."
-	@cp -f scripts/set_gitweb_owner.sh /tmp/set_gitweb_owner.sh
-	@chmod +rx /tmp/set_gitweb_owner.sh
-	su -P $(SUDO_USER) -c "cd /tmp && bash /tmp/set_gitweb_owner.sh '$(OWNER)'"
-	@rm -f /tmp/set_gitweb_owner.sh
-else
-	@echo "Setting owner..."
-	bash scripts/set_gitweb_owner.sh "$(OWNER)"
-endif
+# ----------------- Git Repo Management -----------------
 
-.PHONY: gitweb/update-metadata
-gitweb/update-metadata: ##H @Local Bulk update repo metadata from CSV (usage: make gitweb/update-metadata CSV=scripts/repo_metadata.csv)
-	@echo "Updating repository metadata..."
-ifdef SUDO_USER
-	@# Copy script and CSV to /tmp so SUDO_USER can read them (bypassing restricted home dirs)
-	@cp -f scripts/update_repo_metadata.py /tmp/update_repo_metadata.py
-	@cp -f $(or $(CSV),scripts/repo_metadata.csv) /tmp/repo_metadata.csv
-	@chmod +r /tmp/update_repo_metadata.py /tmp/repo_metadata.csv
-	@echo "Running update script as $(SUDO_USER)..."
-	su -P $(SUDO_USER) -c "cd /tmp && python3 /tmp/update_repo_metadata.py /tmp/repo_metadata.csv"
-	@rm -f /tmp/update_repo_metadata.py /tmp/repo_metadata.csv
-else
-	python3 scripts/update_repo_metadata.py $(or $(CSV),scripts/repo_metadata.csv)
-endif
+.PHONY: git/init
+git/init: ##H @Remote Initialize new bare repo (usage: make git/init NAME=projects/new [DESC="..."])
+	@python3 scripts/manage_repos.py --remote $(VPS) init $(if $(NAME),--name "$(NAME)") $(if $(DESC),--desc "$(DESC)") $(if $(OWNER),--owner "$(OWNER)") --auto-remote
 
-.PHONY: git/init-remote
-git/init-remote: ##H @Remote Initialize a new bare repository on VPS (usage: make git/init-remote REPO=projects/new-repo DESC="Description" [OWNER="Name"])
-ifndef REPO
-	$(error REPO is undefined. Usage: make git/init-remote REPO=projects/new-repo DESC="My Repo")
+.PHONY: git/add
+git/add: ##H @Remote Clone a repository (usage: make git/add URL=... [NAME=...] [DESC=...])
+ifndef URL
+	$(error URL is undefined. Usage: make git/add URL=https://github.com/foo/bar.git)
 endif
-ifndef DESC
-	$(error DESC is undefined. usage: make git/init-remote REPO=... DESC="My Repo")
-endif
-	@# Auto-append .git if missing
-	$(eval REPO_GIT := $(if $(filter %.git,$(REPO)),$(REPO),$(REPO).git))
-	@echo "Initializing bare repository $(REPO_GIT) on $(VPS_HOST)..."
-	ssh $(VPS) "mkdir -p /srv/git/$(REPO_GIT) && cd /srv/git/$(REPO_GIT) && git init --bare && touch git-daemon-export-ok"
-	@echo "Marking directory as safe..."
-	ssh $(VPS) "git config --global --add safe.directory /srv/git/$(REPO_GIT)"
-ifdef OWNER
-	@echo "Setting owner to $(OWNER)..."
-	ssh $(VPS) "git config --file /srv/git/$(REPO_GIT)/config gitweb.owner '$(OWNER)'"
-endif
-	@echo "Setting description to $(DESC)..."
-	ssh $(VPS) "echo '$(DESC)' > /srv/git/$(REPO_GIT)/description"
-	@echo "Repository initialized!"
-	@echo "CD into the repository and run the following commands:"
-	@echo "  Add remote: git remote add helio-web ssh://$(VPS_USER)@$(VPS_HOST)/srv/git/$(REPO_GIT)"
-	@echo "  Push:       git push -u helio-web main"
+	@python3 scripts/manage_repos.py --remote $(VPS) add $(URL) $(if $(NAME),--name "$(NAME)") $(if $(DESC),--desc "$(DESC)") $(if $(OWNER),--owner "$(OWNER)")
 
-.PHONY: git/rename-remote
-git/rename-remote: ##H @Remote Rename/Move a repository on VPS (usage: make git/rename-remote OLD=projects/old.git NEW=@github.com/new.git)
+.PHONY: git/rename
+git/rename: ##H @Remote Rename a repository (usage: make git/rename OLD=... NEW=...)
 ifndef OLD
-	$(error OLD is undefined. Usage: make git/rename-remote OLD=projects/old.git NEW=projects/new.git)
+	$(error OLD is undefined. Usage: make git/rename OLD=projects/old NEW=projects/new)
 endif
 ifndef NEW
-	$(error NEW is undefined. usage: make git/rename-remote OLD=... NEW=...)
+	$(error NEW is undefined.)
 endif
-	@# Auto-append .git if missing
-	$(eval OLD_GIT := $(if $(filter %.git,$(OLD)),$(OLD),$(OLD).git))
-	$(eval NEW_GIT := $(if $(filter %.git,$(NEW)),$(NEW),$(NEW).git))
-	[ "$(OLD_GIT)" = "$(NEW_GIT)" ] || ssh $(VPS) "mkdir -p /srv/git/$$(dirname $(NEW_GIT)) && mv /srv/git/$(OLD_GIT) /srv/git/$(NEW_GIT)" 
-	@echo "Marking directory as safe..."
-	ssh $(VPS) "git config --global --add safe.directory /srv/git/$(NEW_GIT)"
-	@echo "Don't forget to update your local remote URL:"
-	@echo "git remote set-url helio-web ssh://$(VPS_USER)@$(VPS_HOST)/srv/git/$(NEW_GIT)"
+	@python3 scripts/manage_repos.py --remote $(VPS) rename $(OLD) $(NEW)
 
-.PHONY: git/set-head
-git/set-head: ##H @Remote Set default branch (HEAD) for a repo (usage: make git/set-head REPO=... BRANCH=main)
-ifndef REPO
-	$(error REPO is undefined. Usage: make git/set-head REPO=projects/repo.git BRANCH=main)
+.PHONY: git/update
+git/update: ##H @Remote Update repo metadata (usage: make git/update NAME=... [DESC=...] [OWNER=...])
+ifndef NAME
+	$(error NAME is undefined. usage: make git/update NAME=projects/foo ...)
 endif
-ifndef BRANCH
-	$(error BRANCH is undefined. Usage: make git/set-head REPO=... BRANCH=main)
-endif
-	@# Auto-append .git if missing
-	$(eval REPO_GIT := $(if $(filter %.git,$(REPO)),$(REPO),$(REPO).git))
-	@echo "Setting HEAD of $(REPO_GIT) to refs/heads/$(BRANCH)..."
-	ssh $(VPS) "git --git-dir=/srv/git/$(REPO_GIT) symbolic-ref HEAD refs/heads/$(BRANCH)"
-	@echo "HEAD updated."
+	@python3 scripts/manage_repos.py --remote $(VPS) update $(NAME) $(if $(DESC),--desc "$(DESC)") $(if $(OWNER),--owner "$(OWNER)")
+
+.PHONY: git/list
+git/list: ##H @Local List tracked repositories
+	@python3 scripts/manage_repos.py list
+
+.PHONY: git/sync
+git/sync: ##H @Local Sync remote repositories to local JSON
+	@python3 scripts/manage_repos.py --remote $(VPS) sync
