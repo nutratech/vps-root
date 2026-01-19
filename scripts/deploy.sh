@@ -28,9 +28,14 @@ if [ "$1" = "diff" ]; then
 
         # Logic to check against default.conf
         TARGET_FILE="$DEST_CONF_DIR/$BASENAME"
-        if [[ "$BASENAME" == "default.dev.conf" || "$BASENAME" == "default.prod.conf" || "$BASENAME" == "default.conf" ]]; then
-            if [ "$BASENAME" == "default.${ENV}.conf" ]; then
-                TARGET_FILE="$DEST_CONF_DIR/default.conf"
+
+        # Generic handling for *.dev.conf and *.prod.conf
+        if [[ "$BASENAME" =~ ^(.*)\.(dev|prod)\.conf$ ]]; then
+            STEM="${BASH_REMATCH[1]}"
+            CONF_ENV="${BASH_REMATCH[2]}"
+
+            if [ "$CONF_ENV" == "$ENV" ]; then
+                TARGET_FILE="$DEST_CONF_DIR/$STEM.conf"
             else
                 continue
             fi
@@ -63,13 +68,14 @@ if [ "$1" = "test" ]; then
             continue
         fi
 
-        # Handle default configuration switching
-        if [[ "$BASENAME" == "default.dev.conf" || "$BASENAME" == "default.prod.conf" || "$BASENAME" == "default.conf" ]]; then
-            if [ "$BASENAME" == "default.${ENV}.conf" ]; then
-                # Rename to default.conf
-                cp "$FILE" "$TMP_CONF_D/default.conf"
+        # Generic handling for *.dev.conf and *.prod.conf
+        if [[ "$BASENAME" =~ ^(.*)\.(dev|prod)\.conf$ ]]; then
+            STEM="${BASH_REMATCH[1]}"
+            CONF_ENV="${BASH_REMATCH[2]}"
+
+            if [ "$CONF_ENV" == "$ENV" ]; then
+                cp "$FILE" "$TMP_CONF_D/$STEM.conf"
             else
-                # Skip other environment configs
                 continue
             fi
         else
@@ -83,11 +89,14 @@ if [ "$1" = "test" ]; then
 
     if sudo nginx -t -c "$TMP_NGINX_CONF"; then
         echo "✓ Pre-flight validation passed."
-        sudo nginx -T -c "$TMP_NGINX_CONF"
+        if [ -n "$DEBUG" ]; then
+            sudo nginx -T -c "$TMP_NGINX_CONF"
+        fi
         rm -rf "$TMP_WORK_DIR"
         exit 0
     else
         echo "✗ Pre-flight validation FAILED."
+        sudo nginx -T -c "$TMP_NGINX_CONF"
         rm -rf "$TMP_WORK_DIR"
         exit 1
     fi
@@ -109,21 +118,23 @@ echo "Deploying for environment: $ENV"
 echo "Installing new configurations..."
 for FILE in "$NGINX_CONF_SRC"/*.conf; do
     BASENAME=$(basename "$FILE")
-    
+
     # Skip encrypted secrets
     if [ "$BASENAME" = "secrets.conf" ] && ! is_text_file "$FILE"; then
         echo "Skipping encrypted secrets.conf..."
         continue
     fi
 
-    # Handle default configuration switching
-    if [[ "$BASENAME" == "default.dev.conf" || "$BASENAME" == "default.prod.conf" || "$BASENAME" == "default.conf" ]]; then
-        if [ "$BASENAME" == "default.${ENV}.conf" ]; then
-            echo "Installing $BASENAME as default.conf..."
-            sudo cp "$FILE" "$DEST_CONF_DIR/default.conf"
+    # Generic handling for *.dev.conf and *.prod.conf
+    if [[ "$BASENAME" =~ ^(.*)\.(dev|prod)\.conf$ ]]; then
+        STEM="${BASH_REMATCH[1]}"
+        CONF_ENV="${BASH_REMATCH[2]}"
+
+        if [ "$CONF_ENV" == "$ENV" ]; then
+            echo "Installing $BASENAME as $STEM.conf..."
+            sudo cp "$FILE" "$DEST_CONF_DIR/$STEM.conf"
         else
-            # Skip other environment configs and the raw default.conf if it exists
-            echo "Skipping mismatch/raw config: $BASENAME"
+            echo "Skipping mismatch config: $BASENAME"
             continue
         fi
     else
@@ -153,9 +164,9 @@ if sudo nginx -t; then
     if [ -d "$REPO_ROOT/scripts/gitweb-simplefrontend" ]; then
         echo "Generating services map..."
         if [ -f "$REPO_ROOT/scripts/gen_services_map.py" ]; then
-             python3 "$REPO_ROOT/scripts/gen_services_map.py"
+            python3 "$REPO_ROOT/scripts/gen_services_map.py"
         fi
-        
+
         echo "Deploying Gitweb frontend..."
         sudo cp -r "$REPO_ROOT/scripts/gitweb-simplefrontend/"* /srv/git/
         sudo chown -R www-data:www-data /srv/git/
@@ -167,6 +178,7 @@ if sudo nginx -t; then
         sudo mkdir -p /var/www
         sudo cp "$REPO_ROOT/scripts/homepage.html" /var/www/homepage.html
         sudo chown www-data:www-data /var/www/homepage.html
+        sudo chmod 644 /var/www/homepage.html
     fi
 
     echo "✓ Deployment successful."

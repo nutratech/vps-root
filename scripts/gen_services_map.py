@@ -35,12 +35,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </html>"""
 
 
-
 def parse_file(path, pattern, is_version=False):
     if not path.exists():
-         print(f"Warning: Could not find config at {path}")
-         return []
-    
+        print(f"Warning: Could not find config at {path}")
+        return []
+
     with open(path, "r") as f:
         content = f.read()
 
@@ -54,10 +53,14 @@ def parse_file(path, pattern, is_version=False):
                 vid = f"v{version_id}"
             else:
                 vid = version_id
-            items.append({"id": vid, "url": f"/{vid}", "description": description.strip()})
+            items.append(
+                {"id": vid, "url": f"/{vid}", "description": description.strip()}
+            )
         else:
             name, url = m
-            items.append({"id": name.strip(), "url": url.strip(), "description": name.strip()})
+            items.append(
+                {"id": name.strip(), "url": url.strip(), "description": name.strip()}
+            )
     return items
 
 
@@ -67,13 +70,13 @@ def get_all_services():
     service_pattern = re.compile(r"^\s*#\s*Service:\s*(.+?)\s*\|\s*(.+)$", re.MULTILINE)
 
     services_git = parse_file(NGINX_CONF, version_pattern, is_version=True)
-    
+
     # Locate default.conf
     # On Server: Read the live deployed config
     live_default = Path("/etc/nginx/conf.d/default.conf")
     # On Local: Read default.dev.conf
     local_dev = REPO_ROOT / "etc/nginx/conf.d/default.dev.conf"
-    
+
     if live_default.exists():
         DEFAULT_CONF = live_default
         print(f"Using live config: {DEFAULT_CONF}")

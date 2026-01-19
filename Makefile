@@ -191,3 +191,8 @@ git/list: ##H @Local List tracked repositories
 .PHONY: git/sync
 git/sync: ##H @Local Sync remote repositories to local JSON
 	@python3 scripts/manage_repos.py --remote $(VPS) sync
+
+.PHONY: format
+format: ##H @Local Format python and shell scripts
+	git ls-files '*.py' | xargs black
+	git ls-files '*.sh' | xargs shfmt -l -w
