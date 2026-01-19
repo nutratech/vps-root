@@ -35,33 +35,43 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </html>"""
 
 
-def parse_nginx_config():
-    services = []
 
-    if not NGINX_CONF.exists():
-        print(f"Error: Could not find config at {NGINX_CONF}")
-        return []
-
-    # Regex to find "Version X: Description" lines
-    # Matches: # Version 1: Original Gitweb (Standard)
-    version_pattern = re.compile(r"^\s*#\s*Version\s+(\w+):\s*(.+)$", re.MULTILINE)
-
-    with open(NGINX_CONF, "r") as f:
+def parse_file(path, pattern, is_version=False):
+    if not path.exists():
+         print(f"Warning: Could not find config at {path}")
+         return []
+    
+    with open(path, "r") as f:
         content = f.read()
 
-        matches = version_pattern.findall(content)
-        for version_id, description in matches:
+    items = []
+    matches = pattern.findall(content)
+    for m in matches:
+        if is_version:
+            version_id, description = m
             # Clean up version ID (e.g., '1' -> 'v1')
             if not version_id.startswith("v"):
                 vid = f"v{version_id}"
             else:
                 vid = version_id
+            items.append({"id": vid, "url": f"/{vid}", "description": description.strip()})
+        else:
+            name, url = m
+            items.append({"id": name.strip(), "url": url.strip(), "description": name.strip()})
+    return items
 
-            services.append(
-                {"id": vid, "url": f"/{vid}", "description": description.strip()}
-            )
 
-    return services
+def get_all_services():
+    # Regex to find "Version X: Description" lines
+    version_pattern = re.compile(r"^\s*#\s*Version\s+(\w+):\s*(.+)$", re.MULTILINE)
+    service_pattern = re.compile(r"^\s*#\s*Service:\s*(.+?)\s*\|\s*(.+)$", re.MULTILINE)
+
+    services_git = parse_file(NGINX_CONF, version_pattern, is_version=True)
+    
+    DEFAULT_CONF = REPO_ROOT / "etc/nginx/conf.d/default.conf"
+    services_other = parse_file(DEFAULT_CONF, service_pattern, is_version=False)
+
+    return services_git, services_other
 
 
 def generate_html(services):
@@ -78,22 +88,26 @@ def generate_html(services):
 
 
 def main():
-    print(f"Reading config from: {NGINX_CONF}")
-    services = parse_nginx_config()
+    print(f"Reading configs...")
+    services_git, services_other = get_all_services()
 
-    if not services:
-        print("No services found!")
-        return
-
-    print(f"Found {len(services)} services: {[s['id'] for s in services]}")
-
-    html_content = generate_html(services)
-
+    # Output 1: Git Services Only
+    print(f"Generating Git Services map with {len(services_git)} items...")
+    git_html = generate_html(services_git)
     os.makedirs(OUTPUT_HTML.parent, exist_ok=True)
     with open(OUTPUT_HTML, "w") as f:
-        f.write(html_content)
+        f.write(git_html)
+    print(f"Generated Git map at: {OUTPUT_HTML}")
 
-    print(f"Generated site map at: {OUTPUT_HTML}")
+    # Output 2: Homepage (All Services)
+    # Save to scripts/homepage.html to keep it separate from gitweb assets
+    OUTPUT_HTML_HOME = REPO_ROOT / "scripts/homepage.html"
+    services_all = services_git + services_other
+    print(f"Generating Homepage map with {len(services_all)} items...")
+    home_html = generate_html(services_all)
+    with open(OUTPUT_HTML_HOME, "w") as f:
+        f.write(home_html)
+    print(f"Generated Homepage map at: {OUTPUT_HTML_HOME}")
 
 
 if __name__ == "__main__":

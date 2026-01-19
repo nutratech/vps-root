@@ -106,9 +106,22 @@ if sudo nginx -t; then
 
     # Deploy Gitweb frontend assets
     if [ -d "$REPO_ROOT/scripts/gitweb-simplefrontend" ]; then
+        echo "Generating services map..."
+        if [ -f "$REPO_ROOT/scripts/gen_services_map.py" ]; then
+             python3 "$REPO_ROOT/scripts/gen_services_map.py"
+        fi
+        
         echo "Deploying Gitweb frontend..."
         sudo cp -r "$REPO_ROOT/scripts/gitweb-simplefrontend/"* /srv/git/
         sudo chown -R www-data:www-data /srv/git/
+    fi
+
+    # Deploy Homepage
+    if [ -f "$REPO_ROOT/scripts/homepage.html" ]; then
+        echo "Deploying Homepage..."
+        sudo mkdir -p /var/www
+        sudo cp "$REPO_ROOT/scripts/homepage.html" /var/www/homepage.html
+        sudo chown www-data:www-data /var/www/homepage.html
     fi
 
     echo "✓ Deployment successful."

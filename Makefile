@@ -49,6 +49,7 @@ stage/nginx: ##H @Remote Stage files on the remote VPS
 	scp -q etc/gitweb.conf $(VPS):~/.nginx-staging/etc/gitweb.conf
 	scp -q -r scripts/gitweb-simplefrontend/* $(VPS):~/.nginx-staging/scripts/gitweb-simplefrontend/
 	scp -q scripts/deploy.sh $(VPS):~/.nginx-staging/scripts/deploy.sh
+	scp -q scripts/gen_services_map.py $(VPS):~/.nginx-staging/scripts/gen_services_map.py
 
 .PHONY: diff/nginx
 diff/nginx: ##H @Remote Show diff between local and remote
