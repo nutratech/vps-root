@@ -40,14 +40,20 @@ VPS_USER ?= gg
 
 VPS := $(VPS_USER)@$(VPS_HOST)
 
-# Detect Environment
-ifeq ($(VPS_HOST),$(VPS_HOST_DEV))
-    ENV := dev
-else ifeq ($(VPS_HOST),$(VPS_HOST_PROD))
-    ENV := prod
+# Logic:
+# 1. Default ENV to dev.
+# 2. Allow user to override ENV=prod.
+# 3. Set VPS_HOST based on ENV.
+
+ENV ?= dev
+
+ifeq ($(ENV),prod)
+    VPS_HOST := $(VPS_HOST_PROD)
 else
-    ENV := dev
+    VPS_HOST := $(VPS_HOST_DEV)
 endif
+
+VPS := $(VPS_USER)@$(VPS_HOST)
 
 .PHONY: stage/nginx
 stage/nginx: ##H @Remote Stage files on the remote VPS
@@ -63,7 +69,7 @@ stage/nginx: ##H @Remote Stage files on the remote VPS
 .PHONY: diff/nginx
 diff/nginx: ##H @Remote Show diff between local and remote
 	@echo "Checking diff against $(VPS_HOST)..."
-	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh diff"
+	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh diff $(ENV)"
 
 .PHONY: deploy/nginx
 deploy/nginx: ##H @Remote Deploy staged files to remote
@@ -74,7 +80,7 @@ deploy/nginx: stage/nginx test/nginx diff/nginx
 .PHONY: test/nginx
 test/nginx: ##H @Remote Test staged configuration without deploying
 	@echo "Testing staged config on $(VPS_HOST)..."
-	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh test"
+	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh test $(ENV)"
 
 .PHONY: deploy/klaus
 deploy/klaus: ##H @Remote Deploy Klaus (systemd + nginx) and install deps
@@ -106,26 +112,26 @@ certbot/nginx: ##H @Remote Run certbot on remote VPS
 diff/local: ##H @Local Show diff against system config
 ifdef SUDO_USER
 	@echo "Checking diff locally as $(SUDO_USER)..."
-	su -P $(SUDO_USER) -c "bash scripts/deploy.sh diff"
+	su -P $(SUDO_USER) -c "bash scripts/deploy.sh diff $(ENV)"
 else
 	@echo "Checking diff locally..."
-	bash scripts/deploy.sh diff
+	bash scripts/deploy.sh diff $(ENV)
 endif
 
 .PHONY: test/local
 test/local: ##H @Local Test current configuration
 	@echo "Testing locally..."
-	bash scripts/deploy.sh test
+	bash scripts/deploy.sh test $(ENV)
 
 .PHONY: deploy/local
 deploy/local: ##H Deploy Nginx and Gitweb configuration (local)
 ifdef SUDO_USER
 	@echo "Deploying locally as $(SUDO_USER)..."
 	@# We need to run the entire script as the SUDO_USER to ensure they can sudo inside it
-	su -P $(SUDO_USER) -c "bash scripts/deploy.sh"
+	su -P $(SUDO_USER) -c "bash scripts/deploy.sh $(ENV)"
 else
 	@echo "Deploying locally..."
-	bash scripts/deploy.sh
+	bash scripts/deploy.sh $(ENV)
 endif
 
 .PHONY: certbot/local

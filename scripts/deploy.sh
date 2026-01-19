@@ -15,7 +15,8 @@ is_text_file() {
 echo "Source: $REPO_ROOT"
 
 if [ "$1" = "diff" ]; then
-    echo "Detected changes (diff):"
+    ENV="${2:-dev}"
+    echo "Detected changes (diff) for ENV=$ENV:"
     # We can't use simple diff -r because we need to exclude secrets.conf if encrypted
     # So we loop through source files
     for FILE in "$NGINX_CONF_SRC"/*.conf; do
@@ -24,7 +25,18 @@ if [ "$1" = "diff" ]; then
             echo "Skipping encrypted secrets.conf diff..."
             continue
         fi
-        diff -u --color=always "$DEST_CONF_DIR/$BASENAME" "$FILE" || true
+
+        # Logic to check against default.conf
+        TARGET_FILE="$DEST_CONF_DIR/$BASENAME"
+        if [[ "$BASENAME" == "default.dev.conf" || "$BASENAME" == "default.prod.conf" || "$BASENAME" == "default.conf" ]]; then
+            if [ "$BASENAME" == "default.${ENV}.conf" ]; then
+                TARGET_FILE="$DEST_CONF_DIR/default.conf"
+            else
+                continue
+            fi
+        fi
+
+        diff -u --color=always "$TARGET_FILE" "$FILE" || true
     done
 
     # Diff gitweb.conf
@@ -36,7 +48,8 @@ if [ "$1" = "diff" ]; then
 fi
 
 if [ "$1" = "test" ]; then
-    echo "Running pre-flight validation..."
+    ENV="${2:-dev}"
+    echo "Running pre-flight validation for ENV=$ENV..."
     TMP_WORK_DIR=$(mktemp -d)
     TMP_NGINX_CONF="$TMP_WORK_DIR/nginx.conf"
     TMP_CONF_D="$TMP_WORK_DIR/conf.d"
@@ -49,7 +62,19 @@ if [ "$1" = "test" ]; then
             echo "Skipping encrypted secrets.conf for test..."
             continue
         fi
-        cp "$FILE" "$TMP_CONF_D/"
+
+        # Handle default configuration switching
+        if [[ "$BASENAME" == "default.dev.conf" || "$BASENAME" == "default.prod.conf" || "$BASENAME" == "default.conf" ]]; then
+            if [ "$BASENAME" == "default.${ENV}.conf" ]; then
+                # Rename to default.conf
+                cp "$FILE" "$TMP_CONF_D/default.conf"
+            else
+                # Skip other environment configs
+                continue
+            fi
+        else
+            cp "$FILE" "$TMP_CONF_D/"
+        fi
     done
 
     # Generate test nginx.conf
