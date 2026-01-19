@@ -11,25 +11,25 @@ OUTPUT_HTML = REPO_ROOT / "scripts/gitweb-simplefrontend/services.html"
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html>
 <head>
-    <title>NutraTech Git Services</title>
+    <title>{title}</title>
     <style>
         body {{ font-family: sans-serif; max-width: 800px; margin: 2rem auto; line-height: 1.6; padding: 0 1rem; color: #333; }}
         h1 {{ border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }}
+        h2.group-header {{ margin-top: 2rem; border-bottom: 1px solid #eee; color: #555; }}
         .service {{ margin-bottom: 1.5rem; padding: 1.5rem; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9; }}
         .service:hover {{ background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-color: #ccc; }}
-        .service h2 {{ margin-top: 0; margin-bottom: 0.5rem; }}
+        .service h3 {{ margin-top: 0; margin-bottom: 0.5rem; font-size: 1.25rem; }}
         .service a {{ text-decoration: none; color: #0066cc; }}
         .service a:hover {{ text-decoration: underline; }}
         .desc {{ margin-bottom: 0.5rem; }}
         .meta {{ font-size: 0.85em; color: #666; }}
-        .tag {{ display: inline-block; padding: 2px 8px; background: #e0e0e0; border-radius: 12px; font-size: 0.8em; margin-right: 0.5rem; color: #444; }}
     </style>
 </head>
 <body>
-    <h1>Git Services Map</h1>
+    <h1>{title}</h1>
     <p class="meta">Generated automatically from Nginx configuration.</p>
 
-    {services_html}
+    {content}
 
 </body>
 </html>"""
@@ -89,17 +89,26 @@ def get_all_services():
     return services_git, services_other
 
 
-def generate_html(services):
-    services_html = ""
+def generate_html(title, groups):
+    """
+    groups: list of tuples (header_name, services_list)
+    """
+    content_html = ""
 
-    for s in services:
-        services_html += f"""
-    <div class="service">
-        <h2><a href="{s['url']}">{s['url']}</a></h2>
-        <div class="desc">{s['description']}</div>
-    </div>"""
+    for header, services in groups:
+        if header:
+            content_html += f'<h2 class="group-header">{header}</h2>'
+        
+        for s in services:
+            # Use absolute URL if it starts with http, otherwise relative
+            url = s['url']
+            content_html += f"""
+        <div class="service">
+            <h3><a href="{url}">{url}</a></h3>
+            <div class="desc">{s['description']}</div>
+        </div>"""
 
-    return HTML_TEMPLATE.format(services_html=services_html)
+    return HTML_TEMPLATE.format(title=title, content=content_html)
 
 
 def main():
@@ -108,18 +117,29 @@ def main():
 
     # Output 1: Git Services Only
     print(f"Generating Git Services map with {len(services_git)} items...")
-    git_html = generate_html(services_git)
+    git_groups = [("", services_git)]
+    git_html = generate_html("Git Services", git_groups)
+    
     os.makedirs(OUTPUT_HTML.parent, exist_ok=True)
     with open(OUTPUT_HTML, "w") as f:
         f.write(git_html)
     print(f"Generated Git map at: {OUTPUT_HTML}")
 
     # Output 2: Homepage (All Services)
-    # Save to scripts/homepage.html to keep it separate from gitweb assets
     OUTPUT_HTML_HOME = REPO_ROOT / "scripts/homepage.html"
-    services_all = services_git + services_other
-    print(f"Generating Homepage map with {len(services_all)} items...")
-    home_html = generate_html(services_all)
+    
+    # Grouping logic
+    all_groups = [
+        ("Core Services", services_other),
+        ("Git Services", services_git)
+    ]
+    
+    # Calculate total items
+    total_items = sum(len(g[1]) for g in all_groups)
+    print(f"Generating Homepage map with {total_items} items...")
+    
+    home_html = generate_html("All Services", all_groups)
+    
     with open(OUTPUT_HTML_HOME, "w") as f:
         f.write(home_html)
     print(f"Generated Homepage map at: {OUTPUT_HTML_HOME}")
