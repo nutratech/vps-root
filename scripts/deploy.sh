@@ -77,14 +77,34 @@ if sudo ls "$DEST_CONF_DIR"/*.conf >/dev/null 2>&1; then
 fi
 [ -f /etc/gitweb.conf ] && sudo cp /etc/gitweb.conf "$BACKUP_DIR/gitweb.conf"
 
+# ENV is passed as first argument if not diff/test, default to dev
+ENV="${1:-dev}"
+echo "Deploying for environment: $ENV"
+
 echo "Installing new configurations..."
 for FILE in "$NGINX_CONF_SRC"/*.conf; do
     BASENAME=$(basename "$FILE")
+    
+    # Skip encrypted secrets
     if [ "$BASENAME" = "secrets.conf" ] && ! is_text_file "$FILE"; then
         echo "Skipping encrypted secrets.conf..."
         continue
     fi
-    sudo cp "$FILE" "$DEST_CONF_DIR/"
+
+    # Handle default configuration switching
+    if [[ "$BASENAME" == "default.dev.conf" || "$BASENAME" == "default.prod.conf" || "$BASENAME" == "default.conf" ]]; then
+        if [ "$BASENAME" == "default.${ENV}.conf" ]; then
+            echo "Installing $BASENAME as default.conf..."
+            sudo cp "$FILE" "$DEST_CONF_DIR/default.conf"
+        else
+            # Skip other environment configs and the raw default.conf if it exists
+            echo "Skipping mismatch/raw config: $BASENAME"
+            continue
+        fi
+    else
+        # Install all other configs as-is
+        sudo cp "$FILE" "$DEST_CONF_DIR/"
+    fi
 done
 
 echo "Verifying configuration..."

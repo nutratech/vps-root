@@ -68,7 +68,19 @@ def get_all_services():
 
     services_git = parse_file(NGINX_CONF, version_pattern, is_version=True)
     
-    DEFAULT_CONF = REPO_ROOT / "etc/nginx/conf.d/default.conf"
+    # Locate default.conf
+    # On Server: Read the live deployed config
+    live_default = Path("/etc/nginx/conf.d/default.conf")
+    # On Local: Read default.dev.conf
+    local_dev = REPO_ROOT / "etc/nginx/conf.d/default.dev.conf"
+    
+    if live_default.exists():
+        DEFAULT_CONF = live_default
+        print(f"Using live config: {DEFAULT_CONF}")
+    else:
+        DEFAULT_CONF = local_dev
+        print(f"Using local config: {DEFAULT_CONF}")
+
     services_other = parse_file(DEFAULT_CONF, service_pattern, is_version=False)
 
     return services_git, services_other

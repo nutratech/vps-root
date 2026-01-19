@@ -40,9 +40,18 @@ VPS_USER ?= gg
 
 VPS := $(VPS_USER)@$(VPS_HOST)
 
+# Detect Environment
+ifeq ($(VPS_HOST),$(VPS_HOST_DEV))
+    ENV := dev
+else ifeq ($(VPS_HOST),$(VPS_HOST_PROD))
+    ENV := prod
+else
+    ENV := dev
+endif
+
 .PHONY: stage/nginx
 stage/nginx: ##H @Remote Stage files on the remote VPS
-	@echo "Staging files on $(VPS_HOST)..."
+	@echo "Staging files on $(VPS_HOST) (ENV=$(ENV))..."
 	python3 scripts/gen_services_map.py
 	ssh $(VPS) 'rm -rf ~/.nginx-staging && mkdir -p ~/.nginx-staging/etc/nginx/conf.d ~/.nginx-staging/scripts/gitweb-simplefrontend'
 	scp -q -r etc/nginx/conf.d/*.conf $(VPS):~/.nginx-staging/etc/nginx/conf.d/
@@ -60,7 +69,7 @@ diff/nginx: ##H @Remote Show diff between local and remote
 deploy/nginx: ##H @Remote Deploy staged files to remote
 deploy/nginx: stage/nginx test/nginx diff/nginx
 	@echo "Deploying checked-in nginx config to $(VPS_HOST)..."
-	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh"
+	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh $(ENV)"
 
 .PHONY: test/nginx
 test/nginx: ##H @Remote Test staged configuration without deploying
