@@ -5,7 +5,7 @@ from pathlib import Path
 
 # Paths relative to repo root
 REPO_ROOT = Path(__file__).parent.parent
-NGINX_CONF = REPO_ROOT / "etc/nginx/conf.d/git-http.conf"
+NGINX_CONF = REPO_ROOT / "etc/nginx/conf.d/git-http.dev.conf"
 OUTPUT_HTML = REPO_ROOT / "scripts/gitweb-simplefrontend/services.html"
 
 HTML_TEMPLATE = """<!DOCTYPE html>

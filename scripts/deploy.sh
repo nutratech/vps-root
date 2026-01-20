@@ -160,8 +160,8 @@ if sudo nginx -t; then
         sudo cp "$GITWEB_CONF_SRC" /etc/gitweb.conf
     fi
 
-    # Deploy Gitweb frontend assets
-    if [ -d "$REPO_ROOT/scripts/gitweb-simplefrontend" ]; then
+    # Deploy Gitweb frontend assets (Dev Only)
+    if [ "$ENV" == "dev" ] && [ -d "$REPO_ROOT/scripts/gitweb-simplefrontend" ]; then
         echo "Generating services map..."
         if [ -f "$REPO_ROOT/scripts/gen_services_map.py" ]; then
             python3 "$REPO_ROOT/scripts/gen_services_map.py"
