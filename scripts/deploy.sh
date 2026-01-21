@@ -66,37 +66,40 @@ fi
 if [ "$1" = "test" ]; then
     ENV="${2:-dev}"
     echo "Running pre-flight validation for ENV=$ENV..."
+
+    # DEBUG: List what we are working with
+    echo "DEBUG: Staging Directory Contents:"
+    find "$NGINX_CONF_SRC" -print
+
     TMP_WORK_DIR=$(mktemp -d)
     TMP_NGINX_CONF="$TMP_WORK_DIR/nginx.conf"
     TMP_CONF_D="$TMP_WORK_DIR/conf.d"
     mkdir -p "$TMP_CONF_D"
 
     # Copy config files to temp dir for testing, respecting secrets
-    for FILE in "$NGINX_CONF_SRC"/*.conf; do
+    # Copy config files to temp dir for testing, respecting secrets
+    # We scan recursively to find configs in dev/ or prod/ subdirs
+    find "$NGINX_CONF_SRC" -name "*.conf" | while read -r FILE; do
         BASENAME=$(basename "$FILE")
+
+        # Skip secrets.conf if it's not text (encrypted)
         if [ "$BASENAME" = "secrets.conf" ] && ! is_text_file "$FILE"; then
             echo "Skipping encrypted secrets.conf for test..."
             continue
         fi
 
-        # Generic handling for *.dev.conf and *.prod.conf
-        if [[ "$BASENAME" =~ ^(.*)\.(dev|prod)\.conf$ ]]; then
-            STEM="${BASH_REMATCH[1]}"
-            CONF_ENV="${BASH_REMATCH[2]}"
-
-            if [ "$CONF_ENV" == "$ENV" ]; then
-                cp "$FILE" "$TMP_CONF_D/$STEM.conf"
-            else
-                continue
-            fi
-        else
-            cp "$FILE" "$TMP_CONF_D/"
-        fi
+        # We copy all found .conf files to the flat temp directory
+        # Since we use Makefile to only stage the correct ENV, we don't need to filter by name here anymore.
+        cp "$FILE" "$TMP_CONF_D/"
     done
 
     # Generate test nginx.conf
     # We strictly replace the include path
     sed "s|/etc/nginx/conf.d/\*\.conf|$TMP_CONF_D/*.conf|g" /etc/nginx/nginx.conf >"$TMP_NGINX_CONF"
+
+    # DEBUG: Show what we are testing
+    echo "DEBUG: Test Config Structure:"
+    tree "$TMP_WORK_DIR" 2>/dev/null || ls -R "$TMP_WORK_DIR"
 
     if sudo nginx -t -c "$TMP_NGINX_CONF"; then
         echo "✓ Pre-flight validation passed."
@@ -144,7 +147,8 @@ for FILE in "$NGINX_CONF_SRC"/*.conf.disabled; do
     fi
 done
 
-for FILE in "$NGINX_CONF_SRC"/*.conf; do
+# Install configs
+find "$NGINX_CONF_SRC" -name "*.conf" | while read -r FILE; do
     BASENAME=$(basename "$FILE")
 
     # Skip encrypted secrets
@@ -153,22 +157,9 @@ for FILE in "$NGINX_CONF_SRC"/*.conf; do
         continue
     fi
 
-    # Generic handling for *.dev.conf and *.prod.conf
-    if [[ "$BASENAME" =~ ^(.*)\.(dev|prod)\.conf$ ]]; then
-        STEM="${BASH_REMATCH[1]}"
-        CONF_ENV="${BASH_REMATCH[2]}"
-
-        if [ "$CONF_ENV" == "$ENV" ]; then
-            echo "Installing $BASENAME as $STEM.conf..."
-            sudo cp "$FILE" "$DEST_CONF_DIR/$STEM.conf"
-        else
-            echo "Skipping mismatch config: $BASENAME"
-            continue
-        fi
-    else
-        # Install all other configs as-is
-        sudo cp "$FILE" "$DEST_CONF_DIR/"
-    fi
+    # Install to destination (flattening directory structure)
+    echo "Installing $BASENAME..."
+    sudo cp "$FILE" "$DEST_CONF_DIR/"
 done
 
 echo "Verifying configuration..."

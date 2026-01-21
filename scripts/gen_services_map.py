@@ -6,7 +6,7 @@ from pathlib import Path
 
 # Paths relative to repo root
 REPO_ROOT = Path(__file__).parent.parent
-NGINX_CONF = REPO_ROOT / "etc/nginx/conf.d/git-http.dev.conf"
+NGINX_CONF = REPO_ROOT / "etc/nginx/conf.d/dev/git-http.conf"
 OUTPUT_HTML = REPO_ROOT / "scripts/gitweb-simplefrontend/services.html"
 
 HTML_TEMPLATE = """<!DOCTYPE html>
@@ -101,9 +101,9 @@ def get_all_services(custom_config_path=None):
 
     NGINX_CONF_DIR = REPO_ROOT / "etc/nginx/conf.d"
 
-    # Always scan all .conf files in the directory
+    # Always scan all .conf files in the directory (recursively)
     if NGINX_CONF_DIR.exists():
-        conf_files = list(NGINX_CONF_DIR.glob("*.conf"))
+        conf_files = list(NGINX_CONF_DIR.rglob("*.conf"))
         print(f"Scanning {len(conf_files)} config files in {NGINX_CONF_DIR}...")
     else:
         print(f"Warning: Config directory not found at {NGINX_CONF_DIR}")
@@ -112,7 +112,7 @@ def get_all_services(custom_config_path=None):
     services_other = []
     for conf_file in conf_files:
         # Skip the git-http conf as it's parsed separately
-        if conf_file.name == "git-http.dev.conf":
+        if conf_file.name in ["git-http.conf", "git-http.dev.conf"]:
             continue
 
         print(f"  Parsing {conf_file.name}...")
