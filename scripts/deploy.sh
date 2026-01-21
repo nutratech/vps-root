@@ -43,11 +43,11 @@ show_diff() {
         fi
 
         if [ -f "$TARGET_FILE" ]; then
-             diff -u --color=always "$TARGET_FILE" "$FILE" || true
+            diff -u --color=always "$TARGET_FILE" "$FILE" || true
         else
-             echo "New file: $BASENAME"
-             # Show content of new file as diff (dev null vs new)
-             diff -u --color=always /dev/null "$FILE" || true
+            echo "New file: $BASENAME"
+            # Show content of new file as diff (dev null vs new)
+            diff -u --color=always /dev/null "$FILE" || true
         fi
     done
 
@@ -114,7 +114,7 @@ if [ "$1" = "test" ]; then
 fi
 
 # Create timestamped backup
-BACKUP_DIR=~/nginx_backup_$(date +%s)
+BACKUP_DIR=~/.nginx-ops/backups/nginx_backup_$(date +%s)
 echo "Creating backup at $BACKUP_DIR..."
 mkdir -p "$BACKUP_DIR"
 if sudo ls "$DEST_CONF_DIR"/*.conf >/dev/null 2>&1; then

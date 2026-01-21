@@ -67,9 +67,9 @@ stage/nginx: ##H @Remote Stage files on the remote VPS
 		scripts/deploy.sh \
 		scripts/gen_services_map.py \
 		scripts/homepage.html | \
-		ssh $(VPS) "rm -rf ~/.nginx-staging \
-		            && mkdir -p ~/.nginx-staging \
-		            && tar xz -C ~/.nginx-staging"
+		ssh $(VPS) "rm -rf ~/.nginx-ops/staging \
+		            && mkdir -p ~/.nginx-ops/staging \
+		            && tar xz -C ~/.nginx-ops/staging"
 
 
 .PHONY: deploy/nginx
@@ -78,8 +78,8 @@ deploy/nginx: stage/nginx
 	@echo "Connecting to $(VPS_HOST)..."
 	@# We chain test && diff && deploy in ONE SSH session.
 	@# This preserves the sudo timestamp so you only type your password once.
-	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh test $(ENV) && \
-	               bash ~/.nginx-staging/scripts/deploy.sh $(ENV)"
+	ssh -t $(VPS) "bash ~/.nginx-ops/staging/scripts/deploy.sh test $(ENV) && \
+	               bash ~/.nginx-ops/staging/scripts/deploy.sh $(ENV)"
 
 
 .PHONY: deploy/klaus

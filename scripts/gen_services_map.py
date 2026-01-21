@@ -75,39 +75,40 @@ def get_all_services(custom_config_path=None):
 
     services_git = parse_file(NGINX_CONF, version_pattern, is_version=True)
 
-    DEFAULT_CONF = None
-    if custom_config_path:
-        p = Path(custom_config_path)
-        if p.exists():
-            DEFAULT_CONF = p
-            print(f"Using custom config: {DEFAULT_CONF}")
-        else:
-            print(f"Error: Custom config not found at {p}")
-            sys.exit(1)
+    NGINX_CONF_DIR = REPO_ROOT / "etc/nginx/conf.d"
+
+    # Always scan all .conf files in the directory
+    if NGINX_CONF_DIR.exists():
+        conf_files = list(NGINX_CONF_DIR.glob("*.conf"))
+        print(f"Scanning {len(conf_files)} config files in {NGINX_CONF_DIR}...")
     else:
-        # Locate default.conf fallback (old logic)
-        # On Server: Read the live deployed config
-        live_default = Path("/etc/nginx/conf.d/default.conf")
-        # On Local: Read default.dev.conf
-        local_dev = REPO_ROOT / "etc/nginx/conf.d/default.dev.conf"
+        print(f"Warning: Config directory not found at {NGINX_CONF_DIR}")
+        conf_files = []
 
-        if live_default.exists():
-            DEFAULT_CONF = live_default
-            print(f"Using live config: {DEFAULT_CONF}")
-        else:
-            DEFAULT_CONF = local_dev
-            print(f"Using local config: {DEFAULT_CONF}")
+    services_other = []
+    for conf_file in conf_files:
+        # Skip the git-http conf as it's parsed separately
+        if conf_file.name == "git-http.dev.conf":
+            continue
 
-    services_other = parse_file(DEFAULT_CONF, service_pattern, is_version=False)
+        print(f"  Parsing {conf_file.name}...")
+        services_other.extend(parse_file(conf_file, service_pattern, is_version=False))
+
+    # Sort services by ID for consistent output
+    services_other.sort(key=lambda x: x["id"])
 
     return services_git, services_other
 
 
-def generate_html(title, groups):
+def generate_html(title, groups, intro_html=None):
     """
     groups: list of tuples (header_name, services_list)
+    intro_html: optional HTML string to insert before groups
     """
     content_html = ""
+
+    if intro_html:
+        content_html += f'<div class="intro">{intro_html}</div>'
 
     for header, services in groups:
         if header:
@@ -162,7 +163,15 @@ def main():
     total_items = sum(len(g[1]) for g in all_groups)
     print(f"Generating Homepage map with {total_items} items...")
 
-    home_html = generate_html("All Services", all_groups)
+    # Construction Notice
+    construction_notice = """
+    <p>The site is under construction/rebuild... all the services are run from two VPS servers, one with 1 GB and another with 2 GB of RAM.</p>
+    <p>Please see the services we have online below during our extensive rebuild process (Jan 2026).</p>
+    """
+
+    home_html = generate_html(
+        "All Services", all_groups, intro_html=construction_notice
+    )
 
     with open(OUTPUT_HTML_HOME, "w") as f:
         f.write(home_html)
