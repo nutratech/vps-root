@@ -200,6 +200,10 @@ if sudo nginx -t; then
         sudo chown -R www-data:www-data /srv/git/
     fi
 
+    # Generate Homepage (always, as a failsafe)
+    echo "Generating services map..."
+    python3 "$REPO_ROOT/scripts/gen_services_map.py"
+
     # Deploy Homepage
     if [ -f "$REPO_ROOT/scripts/homepage.html" ]; then
         echo "Deploying Homepage..."
@@ -208,6 +212,11 @@ if sudo nginx -t; then
         sudo chown www-data:www-data /var/www/homepage.html
         sudo chmod 644 /var/www/homepage.html
     fi
+
+    # Show deployed config files
+    echo ""
+    echo "Deployed configurations:"
+    tree -a "$DEST_CONF_DIR" 2>/dev/null || ls -la "$DEST_CONF_DIR"
 
     echo "✓ Deployment successful."
 else

@@ -3,18 +3,18 @@
 <head>
     <title>Git Services</title>
     <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; line-height: 1.6; padding: 0 1rem; color: #333; }
-        h1 { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
-        h2.group-header { margin-top: 2rem; border-bottom: 1px solid #eee; color: #555; }
-        .service { margin-bottom: 1.5rem; padding: 1.5rem; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9; }
-        .service:hover { background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-color: #ccc; }
+        body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; line-height: 1.6; padding: 0 1rem; color: #e0e0e0; background: #1a1a2e; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 0.5rem; color: #fff; }
+        h2.group-header { margin-top: 2rem; border-bottom: 1px solid #333; color: #aaa; }
+        .service { margin-bottom: 1.5rem; padding: 1.5rem; border: 1px solid #333; border-radius: 8px; background: #16213e; }
+        .service:hover { background: #1f3460; box-shadow: 0 2px 8px rgba(0,0,0,0.4); border-color: #4a5568; }
         .service h3 { margin-top: 0; margin-bottom: 0.5rem; font-size: 1.25rem; }
-        .service a { text-decoration: none; color: #0066cc; }
-        .service a:hover { text-decoration: underline; }
-        .desc { margin-bottom: 0.5rem; }
-        .meta { font-size: 0.85em; color: #666; }
-        footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #eee; font-size: 0.8em; color: #888; text-align: center; }
-        footer .ssi { font-family: monospace; background: #f5f5f5; padding: 0.2em 0.5em; border-radius: 3px; }
+        .service a { text-decoration: none; color: #60a5fa; }
+        .service a:hover { text-decoration: underline; color: #93c5fd; }
+        .desc { margin-bottom: 0.5rem; color: #b0b0b0; }
+        .meta { font-size: 0.85em; color: #888; }
+        footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #333; font-size: 0.8em; color: #666; text-align: center; }
+        footer .ssi { font-family: monospace; background: #2d3748; padding: 0.2em 0.5em; border-radius: 3px; color: #a0aec0; }
     </style>
 </head>
 <body>
@@ -36,11 +36,12 @@
         </div>
 
     <footer>
-        <p>Built: 2026-01-21 15:53:23  | Services: 3</p>
+        <p>Built: 2026-01-21 16:22:42  | Services: 3 | Server: San Jose, CA</p>
         <p>Nginx: <span class="ssi">v<!--#echo var="nginx_version"--></span> |
+           Protocol: <span class="ssi"><!--#echo var="server_protocol"--></span> |
            Served: <span class="ssi"><!--#echo var="date_local"--></span> |
-           Request: <span class="ssi"><!--#echo var="request_uri"--></span> |
            Latency: <span id="latency" class="ssi">...</span></p>
+        <p>Hosted with love thanks to <a href="https://heliohost.org" target="_blank">HelioHost</a></p>
     </footer>
     <script>
     (function() {
