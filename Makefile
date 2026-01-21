@@ -59,13 +59,15 @@ VPS := $(VPS_USER)@$(VPS_HOST)
 stage/nginx: ##H @Remote Stage files on the remote VPS
 	@echo "Staging files on $(VPS_HOST) (ENV=$(ENV))..."
 	python3 scripts/gen_services_map.py etc/nginx/conf.d/default.$(ENV).conf
-	ssh $(VPS) 'rm -rf ~/.nginx-staging && mkdir -p ~/.nginx-staging/etc/nginx/conf.d ~/.nginx-staging/scripts/gitweb-simplefrontend'
-	scp -q -r etc/nginx/conf.d/*.conf $(VPS):~/.nginx-staging/etc/nginx/conf.d/
-	scp -q etc/gitweb.conf $(VPS):~/.nginx-staging/etc/gitweb.conf
-	scp -q -r scripts/gitweb-simplefrontend/* $(VPS):~/.nginx-staging/scripts/gitweb-simplefrontend/
-	scp -q scripts/deploy.sh $(VPS):~/.nginx-staging/scripts/deploy.sh
-	scp -q scripts/gen_services_map.py $(VPS):~/.nginx-staging/scripts/gen_services_map.py
-	scp -q scripts/homepage.html $(VPS):~/.nginx-staging/scripts/homepage.html
+	# Tar files and stream to remote - significantly faster than multiple SCPs
+	tar cz \
+		etc/nginx/conf.d/*.conf \
+		etc/gitweb.conf \
+		scripts/gitweb-simplefrontend \
+		scripts/deploy.sh \
+		scripts/gen_services_map.py \
+		scripts/homepage.html | \
+		ssh $(VPS) "rm -rf ~/.nginx-staging && mkdir -p ~/.nginx-staging && tar xz -C ~/.nginx-staging"
 
 .PHONY: diff/nginx
 diff/nginx: ##H @Remote Show diff between local and remote
