@@ -172,16 +172,6 @@ def main():
         if s["url"].startswith("/"):
             s["url"] = f"https://git.nutra.tk{s['url']}"
 
-    # Output 1: Git Services Only
-    print(f"Generating Git Services map with {len(services_git)} items...")
-    git_groups = [("", services_git)]
-    git_html = generate_html("Git Services", git_groups)
-
-    os.makedirs(OUTPUT_HTML.parent, exist_ok=True)
-    with open(OUTPUT_HTML, "w") as f:
-        f.write(git_html)
-    print(f"Generated Git map at: {OUTPUT_HTML}")
-
     # Output 2: Homepage (All Services)
     OUTPUT_HTML_HOME = REPO_ROOT / "scripts/homepage.html"
 
@@ -190,7 +180,6 @@ def main():
 
     # Calculate total items
     total_items = sum(len(g[1]) for g in all_groups)
-    print(f"Generating Homepage map with {total_items} items...")
 
     # Construction Notice
     construction_notice = """
@@ -202,9 +191,18 @@ def main():
         "All Services", all_groups, intro_html=construction_notice
     )
 
+    print(f"Generating Unified Service Map with {total_items} items...")
+
+    # Write to Homepage
     with open(OUTPUT_HTML_HOME, "w") as f:
         f.write(home_html)
     print(f"Generated Homepage map at: {OUTPUT_HTML_HOME}")
+
+    # Write to Git Services (same content)
+    os.makedirs(OUTPUT_HTML.parent, exist_ok=True)
+    with open(OUTPUT_HTML, "w") as f:
+        f.write(home_html)
+    print(f"Generated Git map at: {OUTPUT_HTML}")
 
 
 if __name__ == "__main__":

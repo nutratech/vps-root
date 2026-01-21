@@ -7,3 +7,5 @@
 # Unignore all dirs
 # !*/
 
+scripts/homepage.html
+scripts/gitweb-simplefrontend/services.html
