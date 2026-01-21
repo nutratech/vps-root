@@ -2,9 +2,9 @@
 import argparse
 import json
 import os
+import shlex
 import subprocess
 import sys
-import shlex
 
 try:
     import argcomplete

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import re
 import os
+import re
 from pathlib import Path
 
 # Paths relative to repo root
@@ -64,8 +64,9 @@ def parse_file(path, pattern, is_version=False):
     return items
 
 
-import sys
 import argparse
+import sys
+
 
 def get_all_services(custom_config_path=None):
     # Regex to find "Version X: Description" lines
@@ -102,7 +103,6 @@ def get_all_services(custom_config_path=None):
     return services_git, services_other
 
 
-
 def generate_html(title, groups):
     """
     groups: list of tuples (header_name, services_list)
@@ -112,10 +112,10 @@ def generate_html(title, groups):
     for header, services in groups:
         if header:
             content_html += f'<h2 class="group-header">{header}</h2>'
-        
+
         for s in services:
             # Use absolute URL if it starts with http, otherwise relative
-            url = s['url']
+            url = s["url"]
             content_html += f"""
         <div class="service">
             <h3><a href="{url}">{url}</a></h3>
@@ -125,10 +125,13 @@ def generate_html(title, groups):
     return HTML_TEMPLATE.format(title=title, content=content_html)
 
 
-
 def main():
-    parser = argparse.ArgumentParser(description="Generate HTML services map from Nginx config")
-    parser.add_argument("config_path", nargs="?", help="Path to the Nginx configuration file")
+    parser = argparse.ArgumentParser(
+        description="Generate HTML services map from Nginx config"
+    )
+    parser.add_argument(
+        "config_path", nargs="?", help="Path to the Nginx configuration file"
+    )
     args = parser.parse_args()
 
     print(f"Reading configs...")
@@ -143,7 +146,7 @@ def main():
     print(f"Generating Git Services map with {len(services_git)} items...")
     git_groups = [("", services_git)]
     git_html = generate_html("Git Services", git_groups)
-    
+
     os.makedirs(OUTPUT_HTML.parent, exist_ok=True)
     with open(OUTPUT_HTML, "w") as f:
         f.write(git_html)
@@ -151,19 +154,16 @@ def main():
 
     # Output 2: Homepage (All Services)
     OUTPUT_HTML_HOME = REPO_ROOT / "scripts/homepage.html"
-    
+
     # Grouping logic
-    all_groups = [
-        ("Core Services", services_other),
-        ("Git Services", services_git)
-    ]
-    
+    all_groups = [("Core Services", services_other), ("Git Services", services_git)]
+
     # Calculate total items
     total_items = sum(len(g[1]) for g in all_groups)
     print(f"Generating Homepage map with {total_items} items...")
-    
+
     home_html = generate_html("All Services", all_groups)
-    
+
     with open(OUTPUT_HTML_HOME, "w") as f:
         f.write(home_html)
     print(f"Generated Homepage map at: {OUTPUT_HTML_HOME}")
@@ -171,4 +171,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
