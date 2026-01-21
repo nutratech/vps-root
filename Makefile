@@ -2,8 +2,8 @@
 # .ONESHELL:
 
 ifneq (,$(wildcard ./.env))
-    include .env
-    export
+	include .env
+	export
 endif
 
 .PHONY: _help
@@ -48,9 +48,9 @@ VPS := $(VPS_USER)@$(VPS_HOST)
 ENV ?= dev
 
 ifeq ($(ENV),prod)
-    VPS_HOST := $(VPS_HOST_PROD)
+	VPS_HOST := $(VPS_HOST_PROD)
 else
-    VPS_HOST := $(VPS_HOST_DEV)
+	VPS_HOST := $(VPS_HOST_DEV)
 endif
 
 VPS := $(VPS_USER)@$(VPS_HOST)
@@ -67,23 +67,20 @@ stage/nginx: ##H @Remote Stage files on the remote VPS
 		scripts/deploy.sh \
 		scripts/gen_services_map.py \
 		scripts/homepage.html | \
-		ssh $(VPS) "rm -rf ~/.nginx-staging && mkdir -p ~/.nginx-staging && tar xz -C ~/.nginx-staging"
+		ssh $(VPS) "rm -rf ~/.nginx-staging \
+		            && mkdir -p ~/.nginx-staging \
+		            && tar xz -C ~/.nginx-staging"
 
-.PHONY: diff/nginx
-diff/nginx: ##H @Remote Show diff between local and remote
-	@echo "Checking diff against $(VPS_HOST)..."
-	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh diff $(ENV)"
 
 .PHONY: deploy/nginx
 deploy/nginx: ##H @Remote Deploy staged files to remote
-deploy/nginx: stage/nginx test/nginx diff/nginx
-	@echo "Deploying checked-in nginx config to $(VPS_HOST)..."
-	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh $(ENV)"
+deploy/nginx: stage/nginx
+	@echo "Connecting to $(VPS_HOST)..."
+	@# We chain test && diff && deploy in ONE SSH session.
+	@# This preserves the sudo timestamp so you only type your password once.
+	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh test $(ENV) && \
+	               bash ~/.nginx-staging/scripts/deploy.sh $(ENV)"
 
-.PHONY: test/nginx
-test/nginx: ##H @Remote Test staged configuration without deploying
-	@echo "Testing staged config on $(VPS_HOST)..."
-	ssh -t $(VPS) "bash ~/.nginx-staging/scripts/deploy.sh test $(ENV)"
 
 .PHONY: deploy/klaus
 deploy/klaus: ##H @Remote Deploy Klaus (systemd + nginx) and install deps

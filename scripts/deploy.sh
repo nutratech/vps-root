@@ -14,8 +14,9 @@ is_text_file() {
 
 echo "Source: $REPO_ROOT"
 
-if [ "$1" = "diff" ]; then
-    ENV="${2:-dev}"
+# Function to show diff
+show_diff() {
+    local ENV="$1"
     echo "Detected changes (diff) for ENV=$ENV:"
     # We can't use simple diff -r because we need to exclude secrets.conf if encrypted
     # So we loop through source files
@@ -41,14 +42,24 @@ if [ "$1" = "diff" ]; then
             fi
         fi
 
-        diff -u --color=always "$TARGET_FILE" "$FILE" || true
+        if [ -f "$TARGET_FILE" ]; then
+             diff -u --color=always "$TARGET_FILE" "$FILE" || true
+        else
+             echo "New file: $BASENAME"
+             # Show content of new file as diff (dev null vs new)
+             diff -u --color=always /dev/null "$FILE" || true
+        fi
     done
 
     # Diff gitweb.conf
     if [ -f "$GITWEB_CONF_SRC" ]; then
         diff -u --color=always /etc/gitweb.conf "$GITWEB_CONF_SRC" || true
     fi
+}
 
+if [ "$1" = "diff" ]; then
+    ENV="${2:-dev}"
+    show_diff "$ENV"
     exit 0
 fi
 
@@ -114,6 +125,9 @@ fi
 # ENV is passed as first argument if not diff/test, default to dev
 ENV="${1:-dev}"
 echo "Deploying for environment: $ENV"
+
+# Always show diff before installing
+show_diff "$ENV"
 
 echo "Installing new configurations..."
 
