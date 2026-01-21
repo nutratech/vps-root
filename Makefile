@@ -59,9 +59,11 @@ VPS := $(VPS_USER)@$(VPS_HOST)
 stage/nginx: ##H @Remote Stage files on the remote VPS
 	@echo "Staging files on $(VPS_HOST) (ENV=$(ENV))..."
 	python3 scripts/gen_services_map.py etc/nginx/conf.d/default.$(ENV).conf
-	# Tar files and stream to remote - significantly faster than multiple SCPs
+	# Tar files and stream to remote
+	# Include only: "$(ENV)/*.conf" and non-env-specific "*.conf" files
 	tar cz \
 		etc/nginx/conf.d/*.conf \
+		etc/nginx/conf.d/$(ENV)/*.conf \
 		etc/gitweb.conf \
 		scripts/gitweb-simplefrontend \
 		scripts/deploy.sh \
