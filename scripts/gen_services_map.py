@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import re
+from datetime import datetime
 from pathlib import Path
 
 # Paths relative to repo root
@@ -23,6 +24,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .service a:hover {{ text-decoration: underline; }}
         .desc {{ margin-bottom: 0.5rem; }}
         .meta {{ font-size: 0.85em; color: #666; }}
+        footer {{ margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #eee; font-size: 0.8em; color: #888; text-align: center; }}
+        footer .ssi {{ font-family: monospace; background: #f5f5f5; padding: 0.2em 0.5em; border-radius: 3px; }}
     </style>
 </head>
 <body>
@@ -31,6 +34,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     {content}
 
+    <footer>
+        <p>Built: {build_time} | Services: {service_count}</p>
+        <p>Nginx: <span class="ssi">v<!--#echo var="nginx_version"--></span> |
+           Served: <span class="ssi"><!--#echo var="date_local"--></span> |
+           Request: <span class="ssi"><!--#echo var="request_uri"--></span></p>
+    </footer>
 </body>
 </html>"""
 
@@ -123,7 +132,12 @@ def generate_html(title, groups, intro_html=None):
             <div class="desc">{s['description']}</div>
         </div>"""
 
-    return HTML_TEMPLATE.format(title=title, content=content_html)
+    return HTML_TEMPLATE.format(
+        title=title,
+        content=content_html,
+        build_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z"),
+        service_count=sum(len(g[1]) for g in groups),
+    )
 
 
 def main():

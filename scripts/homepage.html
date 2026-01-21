@@ -13,6 +13,8 @@
         .service a:hover { text-decoration: underline; }
         .desc { margin-bottom: 0.5rem; }
         .meta { font-size: 0.85em; color: #666; }
+        footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #eee; font-size: 0.8em; color: #888; text-align: center; }
+        footer .ssi { font-family: monospace; background: #f5f5f5; padding: 0.2em 0.5em; border-radius: 3px; }
     </style>
 </head>
 <body>
@@ -48,5 +50,11 @@
             <div class="desc">Gitea (Full Server with Backend, Main)</div>
         </div>
 
+    <footer>
+        <p>Built: 2026-01-21 15:51:38  | Services: 6</p>
+        <p>Nginx: <span class="ssi">v<!--#echo var="nginx_version"--></span> |
+           Served: <span class="ssi"><!--#echo var="date_local"--></span> |
+           Request: <span class="ssi"><!--#echo var="request_uri"--></span></p>
+    </footer>
 </body>
 </html>
