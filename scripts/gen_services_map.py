@@ -38,8 +38,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <p>Built: {build_time} | Services: {service_count}</p>
         <p>Nginx: <span class="ssi">v<!--#echo var="nginx_version"--></span> |
            Served: <span class="ssi"><!--#echo var="date_local"--></span> |
-           Request: <span class="ssi"><!--#echo var="request_uri"--></span></p>
+           Request: <span class="ssi"><!--#echo var="request_uri"--></span> |
+           Latency: <span id="latency" class="ssi">...</span></p>
     </footer>
+    <script>
+    (function() {{
+        // IE11-compatible: use performance.timing (deprecated but widely supported)
+        var timing = window.performance && window.performance.timing;
+        if (timing) {{
+            window.onload = function() {{
+                var latency = timing.responseEnd - timing.requestStart;
+                var el = document.getElementById('latency');
+                if (el) el.textContent = latency + 'ms';
+            }};
+        }}
+    }})();
+    </script>
 </body>
 </html>"""
 
