@@ -116,6 +116,20 @@ ENV="${1:-dev}"
 echo "Deploying for environment: $ENV"
 
 echo "Installing new configurations..."
+
+# Cleanup disabled configurations
+for FILE in "$NGINX_CONF_SRC"/*.conf.disabled; do
+    [ -e "$FILE" ] || continue
+    BASENAME=$(basename "$FILE")
+    if [[ "$BASENAME" =~ ^(.*)\.conf\.disabled$ ]]; then
+        STEM="${BASH_REMATCH[1]}"
+        if [ -f "$DEST_CONF_DIR/$STEM.conf" ]; then
+            echo "Removing disabled config: $STEM.conf"
+            sudo rm "$DEST_CONF_DIR/$STEM.conf"
+        fi
+    fi
+done
+
 for FILE in "$NGINX_CONF_SRC"/*.conf; do
     BASENAME=$(basename "$FILE")
 
