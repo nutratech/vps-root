@@ -191,11 +191,7 @@ if sudo nginx -t; then
         sudo chown -R www-data:www-data /srv/git/
     fi
 
-    # Generate Homepage (always, as a failsafe)
-    echo "Generating services map..."
-    python3 "$REPO_ROOT/scripts/gen_services_map.py"
-
-    # Deploy Homepage
+    # Deploy Homepage (already generated during local staging)
     if [ -f "$REPO_ROOT/scripts/homepage.html" ]; then
         echo "Deploying Homepage..."
         sudo mkdir -p /var/www
