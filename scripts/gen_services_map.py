@@ -26,6 +26,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .meta {{ font-size: 0.85em; color: #888; }}
         footer {{ margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #333; font-size: 0.8em; color: #666; text-align: center; }}
         footer .ssi {{ font-family: monospace; background: #2d3748; padding: 0.2em 0.5em; border-radius: 3px; color: #a0aec0; }}
+        footer a {{ color: #93c5fd; }}
+        footer a:hover {{ color: #bfdbfe; }}
     </style>
 </head>
 <body>
