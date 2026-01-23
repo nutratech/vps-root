@@ -190,7 +190,7 @@ def main():
     """
 
     home_html = generate_html(
-        "All Services", all_groups, intro_html=construction_notice
+        "Nutratech | All Services", all_groups, intro_html=construction_notice
     )
 
     print(f"Generating Unified Service Map with {total_items} items...")
