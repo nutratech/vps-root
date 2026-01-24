@@ -23,14 +23,8 @@ HOST="my-gitea.server" SSH_USER="admin" ~/.backups/pg_backups/gitea-backup.sh
 
 **Prerequisites (Sudo Access):**
 
-Since the script runs non-interactively, your SSH user must be able to run `gitea` commands as the Gitea user without a password.
+The script attempts to use `sudo`. Because it uses `ssh -t`, you can enter your sudo password interactively.
 
-On the **Gitea Server**, add this to `/etc/sudoers` (using `sudo visudo`):
-
-```text
-# Allow shane to run commands as gg without a password
-shane ALL=(gg) NOPASSWD: /usr/local/bin/gitea
-```
 
 **What it does:**
 
@@ -74,7 +68,7 @@ If your backups are large (e.g., hundreds of MBs), it's likely due to **repo-arc
 
 ```bash
 # On the server
-sudo -u gg rm -rf /var/lib/gitea/data/repo-archive/*
+sudo -u git rm -rf /var/lib/gitea/data/repo-archive/*
 ```
 
 ## Update Procedure

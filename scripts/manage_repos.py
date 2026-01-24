@@ -169,7 +169,7 @@ def cmd_init(args, remote):
     # Safe Directory
     # We need to run this globally or on the system level, but running it locally for the user often works
     # if the user accessing it is the one running this.
-    # However, 'git config --global' on remote affects the remote user (gg).
+    # However, 'git config --global' on remote affects the remote user (git).
     remote_run(
         remote, ["git", "config", "--global", "--add", "safe.directory", full_path]
     )
