@@ -83,27 +83,6 @@ deploy/nginx: stage/nginx
 	ssh -t $(VPS) "bash ~/.nginx-ops/staging/scripts/deploy.sh test $(ENV) && \
 	               bash ~/.nginx-ops/staging/scripts/deploy.sh $(ENV)"
 
-
-.PHONY: deploy/klaus
-deploy/klaus: ##H @Remote Deploy Klaus (systemd + nginx) and install deps
-	@echo "Uploading deployment bundle..."
-	tar cz -C etc/systemd/system klaus.service -C ../../nginx/conf.d klaus.conf -C ../../../scripts klaus_app.py | ssh $(VPS) "cat > /tmp/klaus-deploy.tgz"
-	@echo "Installing on $(VPS_HOST)..."
-	ssh -t $(VPS) "cd /tmp && tar xz -f klaus-deploy.tgz && \
-		sudo bash -c '# apt-get update && apt-get install -y universal-ctags && \
-		pip3 install klaus gunicorn markdown && \
-		mv klaus_app.py /usr/local/bin/klaus_app.py && \
-		mv klaus.service /etc/systemd/system/klaus.service && \
-		systemctl daemon-reload && \
-		systemctl enable --now klaus && \
-		systemctl restart klaus && \
-		mv /etc/nginx/conf.d/git-http.conf /etc/nginx/conf.d/git-http.conf.disabled 2>/dev/null || true && \
-		mv klaus.conf /etc/nginx/conf.d/klaus.conf && \
-		nginx -t && \
-		systemctl reload nginx' && \
-		rm klaus-deploy.tgz"
-	@echo "Klaus deployed!"
-
 .PHONY: certbot/nginx
 certbot/nginx: ##H @Remote Run certbot on remote VPS
 	@echo "Running certbot on $(VPS_HOST)..."
