@@ -1,0 +1,17 @@
+server {
+    listen 80;
+    server_name nutra.tk www.nutra.tk;
+
+    root /var/www/app;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # Browser caching optimization for static assets
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|pdf)$ {
+        expires 7d;
+        access_log off;
+    }
+}
