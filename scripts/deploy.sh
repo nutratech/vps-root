@@ -107,10 +107,22 @@ if [ "$1" = "test" ]; then
             continue
         fi
 
+        # Filter based on directory structure (dev/ vs prod/)
+        if [[ "$FILE" == *"/dev/"* ]]; then
+             if [ "$ENV" != "dev" ]; then continue; fi
+        fi
+        if [[ "$FILE" == *"/prod/"* ]]; then
+             if [ "$ENV" != "prod" ]; then continue; fi
+        fi
+
         # We copy all found .conf files to the flat temp directory
         # Since we use Makefile to only stage the correct ENV, we don't need to filter by name here anymore.
         cp "$FILE" "$TMP_CONF_D/"
     done
+
+    # Rewrite absolute paths to the temp directory for testing
+    # This prevents failures when a config includes another file that hasn't been deployed yet
+    sed -i "s|/etc/nginx/conf.d/|$TMP_CONF_D/|g" "$TMP_CONF_D"/*.conf
 
     # Generate test nginx.conf
     # We strictly replace the include path
