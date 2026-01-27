@@ -65,6 +65,7 @@ stage/vps: ##H @Remote Stage all configuration files on the remote VPS
 		etc/nginx/conf.d/$(ENV)/*.conf \
 		etc/systemd/system/*.service \
 		etc/continuwuity/*.toml \
+		etc/conduwuit/*.toml \
 		etc/matrix-conduit/*.toml \
 		etc/matrix-synapse/**/*.yaml \
 		etc/gitweb.conf \
