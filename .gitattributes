@@ -11,5 +11,6 @@ etc/postfix/main.cf filter=git-crypt diff=git-crypt
 
 /etc/gitea/app.ini filter=git-crypt diff=git-crypt
 
-opt/stalwart/etc/config.toml filter=git-crypt diff=git-crypt
+/opt/stalwart/etc/config.toml filter=git-crypt diff=git-crypt
+/etc/conduwuit/conduwuit.toml filter=git-crypt diff=git-crypt
 
