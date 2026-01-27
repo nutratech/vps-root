@@ -6,6 +6,7 @@
 # e.g. matrix.org, localhost:8080, etc.
 # This is also the last part of your UserID.
 #
+# TODO: rename to nutra.tk at end?
 server_name: dev.nutra.tk
 public_baseurl: https://matrix.nutra.tk
 idp_icon: mxc://dev.nutra.tk/kigyXIXVaLjxJWworavyADhV
