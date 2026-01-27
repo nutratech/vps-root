@@ -188,7 +188,7 @@ if sudo nginx -t; then
 
         echo "Deploying Gitweb frontend..."
         sudo cp -r "$REPO_ROOT/scripts/gitweb-simplefrontend/"* /srv/git/
-        sudo chown -R www-data:www-data /srv/git/
+        sudo chown -R git:git /srv/git/
     fi
 
     # Deploy Homepage (already generated during local staging)
