@@ -55,6 +55,25 @@ show_diff() {
     if [ -f "$GITWEB_CONF_SRC" ]; then
         diff -u --color=always /etc/gitweb.conf "$GITWEB_CONF_SRC" || true
     fi
+
+    # Diff other system files
+    echo "Checking other system files..."
+    for DIR in "etc/systemd/system" "etc/continuwuity" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse"; do
+        if [ -d "$REPO_ROOT/$DIR" ]; then
+            for FILE in "$REPO_ROOT/$DIR"/*; do
+                [ -f "$FILE" ] || continue
+                TARGET="/$DIR/$(basename "$FILE")"
+                [ "$DIR" == "opt/stalwart/etc" ] && TARGET="/opt/stalwart/etc/$(basename "$FILE")"
+
+                if [ -f "$TARGET" ]; then
+                    echo "Diff for $TARGET:"
+                    diff -u --color=always "$TARGET" "$FILE" || true
+                else
+                    echo "New file: $TARGET"
+                fi
+            done
+        fi
+    done
 }
 
 if [ "$1" = "diff" ]; then
@@ -199,6 +218,28 @@ if sudo nginx -t; then
         sudo chown www-data:www-data /var/www/homepage.html
         sudo chmod 644 /var/www/homepage.html
     fi
+
+    # Deploy System Files
+    echo "Installing system files..."
+    for DIR in "etc/systemd/system" "etc/continuwuity" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse"; do
+        if [ -d "$REPO_ROOT/$DIR" ]; then
+            echo "Installing files from $DIR..."
+            # For Stalwart, we need to make sure the path exists
+            if [ "$DIR" == "opt/stalwart/etc" ]; then
+                sudo mkdir -p /opt/stalwart/etc
+            else
+                sudo mkdir -p "/$DIR"
+            fi
+
+            sudo cp -r "$REPO_ROOT/$DIR"/* "/$DIR/"
+
+            # Special handling for systemd: trigger daemon-reload
+            if [ "$DIR" == "etc/systemd/system" ]; then
+                echo "Triggering systemd daemon-reload..."
+                sudo systemctl daemon-reload
+            fi
+        fi
+    done
 
     # Show deployed config files
     echo ""

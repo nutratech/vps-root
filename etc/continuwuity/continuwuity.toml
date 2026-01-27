@@ -1,0 +1,15 @@
+[global]
+server_name = "nutra.tk"
+database_path = "/var/lib/continuwuity/"
+# database_backend = "rocksdb" # Continuwuity uses rocksdb by default
+port = 6167
+address = ["127.0.0.1"]
+max_request_size = 20971520 # 20MB
+allow_registration = true
+allow_federation = true
+trusted_servers = ["matrix.org"]
+# yes_i_am_very_very_sure_i_want_an_open_registration_server_prone_to_abuse = true
+
+[log]
+# For more info on this, check out https://docs.rs/env_logger/latest/env_logger/#enabling-logging
+filter = "warn"

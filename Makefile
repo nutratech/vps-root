@@ -55,16 +55,20 @@ endif
 
 VPS := $(VPS_USER)@$(VPS_HOST)
 
-.PHONY: stage/nginx
-stage/nginx: ##H @Remote Stage files on the remote VPS
+.PHONY: stage/vps
+stage/vps: ##H @Remote Stage all configuration files on the remote VPS
 	@echo "Staging files on $(VPS_HOST) (ENV=$(ENV))..."
 	python3 scripts/gen_services_map.py etc/nginx/conf.d/$(ENV)/default.conf
 	# Tar files and stream to remote
-	# Include only: "$(ENV)/*.conf" and non-env-specific "*.conf" files
 	tar cz \
 		etc/nginx/conf.d/*.conf \
 		etc/nginx/conf.d/$(ENV)/*.conf \
+		etc/systemd/system/*.service \
+		etc/continuwuity/*.toml \
+		etc/matrix-conduit/*.toml \
+		etc/matrix-synapse/**/*.yaml \
 		etc/gitweb.conf \
+		opt/stalwart/etc/*.toml \
 		scripts/gitweb-simplefrontend \
 		scripts/deploy.sh \
 		scripts/gen_services_map.py \
@@ -73,15 +77,19 @@ stage/nginx: ##H @Remote Stage files on the remote VPS
 		            && mkdir -p ~/.nginx-ops/staging \
 		            && tar xz -C ~/.nginx-ops/staging"
 
+.PHONY: stage/nginx
+stage/nginx: stage/vps
 
-.PHONY: deploy/nginx
-deploy/nginx: ##H @Remote Deploy staged files to remote
-deploy/nginx: stage/nginx
+
+.PHONY: deploy/vps
+deploy/vps: ##H @Remote Deploy staged files to remote VPS
+deploy/vps: stage/vps
 	@echo "Connecting to $(VPS_HOST)..."
-	@# We chain test && diff && deploy in ONE SSH session.
-	@# This preserves the sudo timestamp so you only type your password once.
 	ssh -t $(VPS) "bash ~/.nginx-ops/staging/scripts/deploy.sh test $(ENV) && \
 	               bash ~/.nginx-ops/staging/scripts/deploy.sh $(ENV)"
+
+.PHONY: deploy/nginx
+deploy/nginx: deploy/vps
 
 .PHONY: certbot/nginx
 certbot/nginx: ##H @Remote Run certbot on remote VPS
