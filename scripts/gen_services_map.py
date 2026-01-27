@@ -206,6 +206,24 @@ def main():
         f.write(home_html)
     print(f"Generated Git map at: {OUTPUT_HTML}")
 
+    # Output 3: JSON Data for Svelte App
+    # We want to output this to opt/my-website/src/lib/services.json
+    OUTPUT_JSON = REPO_ROOT / "opt/my-website/src/lib/services.json"
+    import json
+
+    # Flatten groups for JSON
+    json_data = {
+        "generated_at": datetime.now().isoformat(),
+        "groups": [
+            {"name": name, "services": services} for name, services in all_groups
+        ],
+    }
+
+    os.makedirs(OUTPUT_JSON.parent, exist_ok=True)
+    with open(OUTPUT_JSON, "w") as f:
+        json.dump(json_data, f, indent=2)
+    print(f"Generated JSON data at: {OUTPUT_JSON}")
+
 
 if __name__ == "__main__":
     main()

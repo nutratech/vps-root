@@ -109,10 +109,10 @@ if [ "$1" = "test" ]; then
 
         # Filter based on directory structure (dev/ vs prod/)
         if [[ "$FILE" == *"/dev/"* ]]; then
-             if [ "$ENV" != "dev" ]; then continue; fi
+            if [ "$ENV" != "dev" ]; then continue; fi
         fi
         if [[ "$FILE" == *"/prod/"* ]]; then
-             if [ "$ENV" != "prod" ]; then continue; fi
+            if [ "$ENV" != "prod" ]; then continue; fi
         fi
 
         # We copy all found .conf files to the flat temp directory
@@ -249,6 +249,20 @@ if sudo nginx -t; then
             if [ "$DIR" == "etc/systemd/system" ]; then
                 echo "Triggering systemd daemon-reload..."
                 sudo systemctl daemon-reload
+            fi
+
+            # Service Restarts
+            if [ "$DIR" == "etc/conduwuit" ]; then
+                echo "Restarting conduwuit service..."
+                sudo systemctl restart conduwuit || echo "Warning: Failed to restart conduwuit"
+            fi
+            if [ "$DIR" == "etc/continuwuity" ]; then
+                echo "Restarting continuwuity service..."
+                sudo systemctl restart continuwuity || echo "Warning: Failed to restart continuwuity"
+            fi
+            if [ "$DIR" == "opt/stalwart/etc" ]; then
+                echo "Restarting stalwart service..."
+                sudo systemctl restart stalwart || echo "Warning: Failed to restart stalwart"
             fi
         fi
     done

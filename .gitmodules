@@ -1,0 +1,3 @@
+[submodule "opt/my-website"]
+	path = opt/my-website
+	url = git@gitlab.com:gamesguru/my-website.git
