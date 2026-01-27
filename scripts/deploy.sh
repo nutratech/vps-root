@@ -58,7 +58,7 @@ show_diff() {
 
     # Diff other system files
     echo "Checking other system files..."
-    for DIR in "etc/systemd/system" "etc/continuwuity" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse"; do
+    for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse"; do
         if [ -d "$REPO_ROOT/$DIR" ]; then
             for FILE in "$REPO_ROOT/$DIR"/*; do
                 [ -f "$FILE" ] || continue
@@ -221,7 +221,7 @@ if sudo nginx -t; then
 
     # Deploy System Files
     echo "Installing system files..."
-    for DIR in "etc/systemd/system" "etc/continuwuity" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse"; do
+    for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse"; do
         if [ -d "$REPO_ROOT/$DIR" ]; then
             echo "Installing files from $DIR..."
             # For Stalwart, we need to make sure the path exists
