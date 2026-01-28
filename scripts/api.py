@@ -45,6 +45,8 @@ sub   cv25519/CA76D7960067EE77 2025-09-11 [E]
 }
 
 
+STATS_FILE = "/opt/api/stats.json"
+
 def validate_captcha(token):
     """Validates the Turnstile token with Cloudflare."""
     url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
@@ -58,38 +60,46 @@ def validate_captcha(token):
         return False
 
 
-def parse_blocked_ips():
-    if os.path.exists(BLOCKED_CONF_LOCAL):
-        conf_path = BLOCKED_CONF_LOCAL
-    else:
-        conf_path = BLOCKED_CONF_SYSTEM
-
-    if not os.path.exists(conf_path):
-        return []
-
-    entries = []
+def get_combined_stats():
+    # 1. Parse Nginx Blocked IPs (Manual)
+    nginx_entries = []
     current_comment = ""
+    conf_path = BLOCKED_CONF_LOCAL if os.path.exists(BLOCKED_CONF_LOCAL) else BLOCKED_CONF_SYSTEM
+    
+    if os.path.exists(conf_path):
+        try:
+            with open(conf_path, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line: continue
+                    if line.startswith("#"):
+                        current_comment = line.lstrip("# ").strip()
+                        continue
+                    match = re.match(r"^deny\s+([\d\.]+);", line)
+                    if match:
+                        nginx_entries.append({"ip": match.group(1), "comment": current_comment})
+        except Exception as e:
+            print(f"Error parsing nginx config: {e}")
 
-    try:
-        with open(conf_path, "r") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
+    # 2. Read Fail2Ban Stats
+    f2b_stats = {}
+    if os.path.exists(STATS_FILE):
+        try:
+            with open(STATS_FILE, "r") as f:
+                f2b_stats = json.load(f)
+        except Exception as e:
+            print(f"Error parsing stats.json: {e}")
 
-                if line.startswith("#"):
-                    current_comment = line.lstrip("# ").strip()
-                    continue
-
-                # Format: deny 1.2.3.4;
-                match = re.match(r"^deny\s+([\d\.]+);", line)
-                if match:
-                    entries.append({"ip": match.group(1), "comment": current_comment})
-    except Exception as e:
-        print(f"Error parsing config: {e}")
-        return []
-
-    return entries
+    return {
+        "nginx_manual": {
+            "count": len(nginx_entries),
+            "entries": nginx_entries
+        },
+        "fail2ban": f2b_stats.get("sshd", {}),
+        "git_scrapers": f2b_stats.get("nginx_git_scrapers", {}),
+        "server_location": f2b_stats.get("server_location", "Unknown"),
+        "updated_at": f2b_stats.get("updated_at", "")
+    }
 
 
 @app.route("/api/contact", methods=["POST"])
