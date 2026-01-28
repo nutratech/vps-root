@@ -196,3 +196,4 @@ format: ##H @Local Format python and shell scripts
 	git ls-files '*.conf' | xargs nginxfmt
 	git ls-files '*.py' | xargs black
 	git ls-files '*.sh' | xargs shfmt -l -w
+	cd opt/my-website && make format
