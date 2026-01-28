@@ -100,7 +100,6 @@ certbot/nginx: ##H @Remote Run certbot on remote VPS
 # Application Deployment
 .PHONY: build/website
 build/website: ##H @Local Build the static website
-	python3 scripts/gen_blocked_stats.py
 	$(MAKE) -C opt/my-website build
 
 .PHONY: deploy/website

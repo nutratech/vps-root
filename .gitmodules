@@ -1,3 +1,6 @@
 [submodule "opt/my-website"]
 	path = opt/my-website
 	url = git@gitlab.com:gamesguru/my-website.git
+[submodule "opt/api"]
+	path = opt/api
+	url = git@dev:repos/home.shane.repos.nutra.api.git
