@@ -44,7 +44,6 @@ sub   cv25519/CA76D7960067EE77 2025-09-11 [E]
     ),
 }
 
-
 STATS_FILE = "/opt/api/stats.json"
 
 def validate_captcha(token):
@@ -117,8 +116,7 @@ def contact():
 
 @app.route("/api/blocked")
 def get_blocked():
-    entries = parse_blocked_ips()
-    return jsonify({"count": len(entries), "entries": entries})
+    return jsonify(get_combined_stats())
 
 
 @app.route("/api/health")
