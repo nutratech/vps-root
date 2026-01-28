@@ -8,18 +8,17 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def index():
-    return jsonify({
-        "service": "Nutra API",
-        "description": "Backend API for Nutra.tk services",
-        "endpoints": [
-            "/api/blocked",
-            "/api/contact",
-            "/api/resume",
-            "/api/health"
-        ]
-    })
+    return jsonify(
+        {
+            "service": "Nutra API",
+            "description": "Backend API for Nutra.tk services",
+            "endpoints": ["/api/blocked", "/api/contact", "/api/resume", "/api/health"],
+        }
+    )
+
 
 # Constants
 BLOCKED_CONF_LOCAL = (
@@ -102,8 +101,9 @@ def contact():
 
     if validate_captcha(token):
         return jsonify(CONTACT_INFO)
-    
+
     return jsonify({"error": "Invalid captcha"}), 403
+
 
 @app.route("/api/blocked")
 def get_blocked():
@@ -127,11 +127,14 @@ def resume():
         # Allow defining resume path via env, but default to standard location
         resume_path = os.environ.get("RESUME_PATH", "/var/www/cv/swe/resume.pdf")
         if os.path.exists(resume_path):
-             from flask import send_file
-             return send_file(resume_path, as_attachment=True, download_name="resume.pdf")
+            from flask import send_file
+
+            return send_file(
+                resume_path, as_attachment=True, download_name="resume.pdf"
+            )
         else:
             return jsonify({"error": "Resume file not found on server"}), 404
-    
+
     return jsonify({"error": "Invalid captcha"}), 403
 
 
