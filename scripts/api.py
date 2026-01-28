@@ -2,15 +2,48 @@
 import re
 import os
 from flask import Flask, jsonify
+import re
+import requests
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-# Config
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# Config
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BLOCKED_CONF_LOCAL = os.path.join(REPO_ROOT, "etc/nginx/conf.d/blocked_ips.conf")
+# Constants
+BLOCKED_CONF_LOCAL = (
+    "/home/shane/repos/nutra/vps-root/etc/nginx/conf.d/blocked_ips.conf"
+)
 BLOCKED_CONF_SYSTEM = "/etc/nginx/conf.d/blocked_ips.conf"
+
+# Cloudflare Turnstile Secret (Get from ENV or fallback)
+TURNSTILE_SECRET_KEY = os.environ["TURNSTILE_SECRET_KEY"]
+CONTACT_INFO = {
+    "email": os.environ.get("CONTACT_EMAIL", "shane@nutra.tk"),
+    "matrix": os.environ.get("CONTACT_MATRIX", "@gamesguru:matrix.org"),
+    "gpg": os.environ.get(
+        "CONTACT_GPG",
+        """pub   ed25519/CDBCCB44A608363E 2025-09-11 [SC]
+      C6662F132E169C4802627B1ECDBCCB44A608363E
+uid                 [  full  ] Shane J. (GIT SIGN+ENCRYPT KEY [DESKTOP])
+uid                 [  full  ] gamesguru (GitHub) <30691680+gamesguru@users.noreply.github.com>
+uid                 [  full  ] gamesguru (GitLab) <25245323-gamesguru@users.noreply.gitlab.com>
+uid                 [  full  ] gg@desktop <chown_tee@proton.me>
+sub   cv25519/CA76D7960067EE77 2025-09-11 [E]
+      C884FDED5E44D4EEC34F574ACA76D7960067EE77""",
+    ),
+}
+
+
+def validate_captcha(token):
+    """Validates the Turnstile token with Cloudflare."""
+    url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+    data = {"secret": TURNSTILE_SECRET_KEY, "response": token}
+    try:
+        res = requests.post(url, data=data)
+        result = res.json()
+        return result.get("success", False)
+    except Exception as e:
+        print(f"Validation error: {e}")
+        return False
 
 
 def parse_blocked_ips():
