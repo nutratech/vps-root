@@ -5,7 +5,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
-from email import encoders
+from email import encoders, utils
 import requests
 from flask import Flask, jsonify, request
 
@@ -120,9 +120,16 @@ def get_combined_stats():
     if os.path.exists(STATS_FILE):
         try:
             with open(STATS_FILE, "r") as f:
-                f2b_stats = json.load(f)
+                content = f.read().strip()
+                if content:
+                    # Remove any non-printable characters manually
+                    import string
+                    printable = set(string.printable)
+                    content = "".join(filter(lambda x: x in printable, content))
+                    f2b_stats = json.loads(content)
         except Exception as e:
             print(f"Error parsing stats.json: {e}")
+            f2b_stats = {}
 
     return {
         "nginx_manual": {"count": len(nginx_entries), "entries": nginx_entries},
@@ -182,15 +189,15 @@ def resume():
 def send_resume():
     data = request.json
     token = data.get("token")
-    email = data.get("email")
+    recipient_email = data.get("email")
 
     if not token:
         return jsonify({"error": "Missing token"}), 400
-    if not email:
+    if not recipient_email:
         return jsonify({"error": "Missing email"}), 400
 
     # Basic email validation
-    if not re.match(r"^[^@]+@[^@]+\.[^@]+$", email):
+    if not re.match(r"^[^@]+@[^@]+\.[^@]+$", recipient_email):
         return jsonify({"error": "Invalid email address"}), 400
 
     # Validate fresh captcha token
@@ -203,17 +210,25 @@ def send_resume():
 
     try:
         # SMTP config from env
-        smtp_host = os.environ.get("SMTP_HOST", "localhost")
+        smtp_host = os.environ.get("SMTP_HOST", "127.0.0.1")
         smtp_port = int(os.environ.get("SMTP_PORT", 587))
         smtp_user = os.environ["SMTP_USER"]
         smtp_pass = os.environ["SMTP_PASSWORD"]
-        smtp_from = os.environ["SMTP_FROM"]
+        smtp_from_env = os.environ["SMTP_FROM"]
+        
+        # Extract clean email for envelope sender
+        _, envelope_from = utils.parseaddr(smtp_from_env)
+        if not envelope_from or "@" not in envelope_from:
+            envelope_from = smtp_user if "@" in smtp_user else "services@nutra.tk"
 
         # Build email
         msg = MIMEMultipart()
-        msg["From"] = smtp_from
-        msg["To"] = email
+        # Ensure the From address in the header matches the envelope sender for deliverability
+        msg["From"] = f"Shane J. <{envelope_from}>"
+        msg["To"] = recipient_email
         msg["Subject"] = "Shane J. - Resume"
+        msg["Date"] = utils.formatdate(localtime=True)
+        msg["Message-ID"] = utils.make_msgid(domain="nutra.tk")
 
         body = """Hi,
 
@@ -224,22 +239,24 @@ Nutra.tk
 """
         msg.attach(MIMEText(body, "plain"))
 
-        # Attach PDF
+        # Attach PDF with correct type
         with open(resume_path, "rb") as f:
-            part = MIMEBase("application", "octet-stream")
+            part = MIMEBase("application", "pdf")
             part.set_payload(f.read())
             encoders.encode_base64(part)
             part.add_header("Content-Disposition", "attachment", filename="resume.pdf")
             msg.attach(part)
 
         # Send
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
             if smtp_user and smtp_pass:
-                server.starttls()
+                if smtp_port != 465:
+                    server.starttls()
                 server.login(smtp_user, smtp_pass)
-            server.sendmail(smtp_from, email, msg.as_string())
+            # Use clean envelope_from
+            server.sendmail(envelope_from, recipient_email, msg.as_string())
 
-        return jsonify({"success": True, "message": f"Resume sent to {email}"})
+        return jsonify({"success": True, "message": f"Resume sent to {recipient_email}"})
 
     except Exception as e:
         error_msg = str(e)

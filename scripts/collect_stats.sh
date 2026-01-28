@@ -7,7 +7,7 @@ OUTPUT_FILE="/opt/api/stats.json"
 # Collect SSHD stats
 SSHD_BANNED=$(fail2ban-client status sshd | grep "Currently banned" | awk '{print $NF}')
 SSHD_TOTAL=$(fail2ban-client status sshd | grep "Total banned" | awk '{print $NF}')
-SSHD_LIST=$(fail2ban-client status sshd | grep "Banned IP list" | cut -d: -f2)
+SSHD_LIST=$(fail2ban-client status sshd | grep "Banned IP list" | cut -d: -f2 | tr -cd '[:print:]' | xargs)
 
 # Collect Git Scraper stats (if active)
 GIT_BANNED=$(fail2ban-client status nginx-git-scrapers 2>/dev/null | grep "Currently banned" | awk '{print $NF}')
