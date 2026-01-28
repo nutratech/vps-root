@@ -246,7 +246,7 @@ if sudo nginx -t; then
                 sudo systemctl daemon-reload
             fi
 
-            # Service Restarts
+            # Restart Service
             if [ "$DIR" == "etc/conduwuit" ]; then
                 echo "Restarting conduwuit service..."
                 sudo systemctl restart conduwuit || echo "Warning: Failed to restart conduwuit"
@@ -262,6 +262,15 @@ if sudo nginx -t; then
         fi
     done
 
+    # Deploy Stats Collection
+    if [ -f "$REPO_ROOT/scripts/collect_stats.sh" ]; then
+        echo "Deploying stats collection..."
+        sudo cp "$REPO_ROOT/scripts/collect_stats.sh" /opt/vps-root/scripts/collect_stats.sh
+        sudo chmod +x /opt/vps-root/scripts/collect_stats.sh
+        sudo systemctl enable nutra-stats.timer
+        sudo systemctl start nutra-stats.timer
+    fi
+
     # Deploy Nutra Env
     if [ -f "$REPO_ROOT/etc/nutra.env" ]; then
         echo "Deploying nutra.env..."
@@ -270,10 +279,10 @@ if sudo nginx -t; then
     fi
 
     # Deploy Nutra API
-    if [ -f "$REPO_ROOT/scripts/api.py" ]; then
+    if [ -f "$REPO_ROOT/opt/api/api.py" ]; then
         echo "Deploying Nutra API..."
         sudo mkdir -p /opt/api
-        sudo cp "$REPO_ROOT/scripts/api.py" /opt/api/api.py
+        sudo cp "$REPO_ROOT/opt/api/api.py" /opt/api/api.py
         sudo chmod +x /opt/api/api.py
 
         # Ensure Flask is installed

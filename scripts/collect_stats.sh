@@ -16,7 +16,7 @@ if [ -z "$GIT_BANNED" ]; then GIT_BANNED=0; fi
 if [ -z "$GIT_TOTAL" ]; then GIT_TOTAL=0; fi
 
 # Write JSON
-cat <<EOF > "$OUTPUT_FILE"
+cat <<EOF >"$OUTPUT_FILE"
 {
   "updated_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
   "sshd": {
