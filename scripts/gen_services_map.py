@@ -106,12 +106,15 @@ def get_all_services(custom_config_path=None):
     # Use custom path if provided, otherwise scan all .conf files
     if custom_config_path:
         path = Path(custom_config_path)
-        if path.exists():
+        if path.is_dir():
+            conf_files = list(path.rglob("*.conf"))
+            print(f"Scanning custom directory: {path} ({len(conf_files)} files)")
+        elif path.exists():
             conf_files = [path]
             print(f"Using custom config file: {path}")
         else:
-             print(f"Warning: Custom config not found at {path}")
-             conf_files = []
+            print(f"Warning: Custom config not found at {path}")
+            conf_files = []
     elif NGINX_CONF_DIR.exists():
         conf_files = list(NGINX_CONF_DIR.rglob("*.conf"))
         print(f"Scanning {len(conf_files)} config files in {NGINX_CONF_DIR}...")
