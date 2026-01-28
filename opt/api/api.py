@@ -193,6 +193,7 @@ def send_resume():
     if not re.match(r"^[^@]+@[^@]+\.[^@]+$", email):
         return jsonify({"error": "Invalid email address"}), 400
 
+    # Validate fresh captcha token
     if not validate_captcha(token):
         return jsonify({"error": "Invalid captcha"}), 403
 
@@ -203,10 +204,10 @@ def send_resume():
     try:
         # SMTP config from env
         smtp_host = os.environ.get("SMTP_HOST", "localhost")
-        smtp_port = int(os.environ.get("SMTP_PORT", 25))
-        smtp_user = os.environ.get("SMTP_USER", "")
-        smtp_pass = os.environ.get("SMTP_PASSWORD", "")
-        smtp_from = os.environ.get("SMTP_FROM", "noreply@nutra.tk")
+        smtp_port = int(os.environ.get("SMTP_PORT", 587))
+        smtp_user = os.environ["SMTP_USER"]
+        smtp_pass = os.environ["SMTP_PASSWORD"]
+        smtp_from = os.environ["SMTP_FROM"]
 
         # Build email
         msg = MIMEMultipart()
@@ -241,8 +242,9 @@ Nutra.tk
         return jsonify({"success": True, "message": f"Resume sent to {email}"})
 
     except Exception as e:
-        print(f"Email error: {e}")
-        return jsonify({"error": "Failed to send email"}), 500
+        error_msg = str(e)
+        print(f"Email error: {error_msg}")
+        return jsonify({"error": f"Failed to send email: {error_msg}"}), 500
 
 
 @app.route("/api/server-info")
