@@ -103,8 +103,16 @@ def get_all_services(custom_config_path=None):
 
     NGINX_CONF_DIR = REPO_ROOT / "etc/nginx/conf.d"
 
-    # Always scan all .conf files in the directory (recursively)
-    if NGINX_CONF_DIR.exists():
+    # Use custom path if provided, otherwise scan all .conf files
+    if custom_config_path:
+        path = Path(custom_config_path)
+        if path.exists():
+            conf_files = [path]
+            print(f"Using custom config file: {path}")
+        else:
+             print(f"Warning: Custom config not found at {path}")
+             conf_files = []
+    elif NGINX_CONF_DIR.exists():
         conf_files = list(NGINX_CONF_DIR.rglob("*.conf"))
         print(f"Scanning {len(conf_files)} config files in {NGINX_CONF_DIR}...")
     else:
