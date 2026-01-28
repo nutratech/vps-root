@@ -29,17 +29,41 @@ TURNSTILE_SECRET_KEY = os.environ["TURNSTILE_SECRET_KEY"]
 CONTACT_INFO = {
     "email": os.environ.get("CONTACT_EMAIL", "shane@nutra.tk"),
     "matrix": os.environ.get("CONTACT_MATRIX", "@gamesguru:matrix.org"),
-    "gpg": os.environ.get(
-        "CONTACT_GPG",
-        """pub   ed25519/CDBCCB44A608363E 2025-09-11 [SC]
+    "gpg_description": """pub   ed25519/CDBCCB44A608363E 2025-09-11 [SC]
       C6662F132E169C4802627B1ECDBCCB44A608363E
-uid                 [  full  ] Shane J. (GIT SIGN+ENCRYPT KEY [DESKTOP])
-uid                 [  full  ] gamesguru (GitHub) <30691680+gamesguru@users.noreply.github.com>
-uid                 [  full  ] gamesguru (GitLab) <25245323-gamesguru@users.noreply.gitlab.com>
-uid                 [  full  ] gg@desktop <chown_tee@proton.me>
+uid  Shane J. (GIT SIGN+ENCRYPT KEY [DESKTOP])
+uid  gamesguru (GitHub) <30691680+gamesguru@users.noreply.github.com>
+uid  gamesguru (GitLab) <25245323-gamesguru@users.noreply.gitlab.com>
+uid  gg@desktop <chown_tee@proton.me>
 sub   cv25519/CA76D7960067EE77 2025-09-11 [E]
       C884FDED5E44D4EEC34F574ACA76D7960067EE77""",
-    ),
+    "gpg_public_key": """-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2
+
+mDMEaMK+LxYJKwYBBAHaRw8BAQdArXbotsYIylKgx3uvcaQYP2TFFkcAKP6WsuVe
+hf/CLHu0KVNoYW5lIEouIChHSVQgU0lHTitFTkNSWVBUIEtFWSBbREVTS1RPUF0p
+iJMEExYIADsCGwMFCwkIBwIGFQoJCAsCBBYCAwECHgECF4AWIQTGZi8TLhacSAJi
+ex7NvMtEpgg2PgUCaMMBDAIZAQAKCRDNvMtEpgg2PuYXAP9FmVrMELg0lkaC+6Hc
+uFG1c3LmuUN41lBzBtOLAZnNRgEA1y+FEIvYQS6n71lfaluAhoEpVM2Bt8NGyrbn
++JaoaAG0QGdhbWVzZ3VydSAoR2l0SHViKSA8MzA2OTE2ODArZ2FtZXNndXJ1QHVz
+ZXJzLm5vcmVwbHkuZ2l0aHViLmNvbT6IkwQTFgoAOxYhBMZmLxMuFpxIAmJ7Hs28
+y0SmCDY+BQJow1Y9AhsDBQsJCAcCAiICBhUKCQgLAgQWAgMBAh4HAheAAAoJEM28
+y0SmCDY+d9sA/jMj1IksCEAI1LoXm7WT8Cl1P0DzMtvfVEYGlmYJKwAEAQC8V/XT
+kN8rVqjn15I7CHzpl1uzwblWB2EONRDLYNIhDrRAZ2FtZXNndXJ1IChHaXRMYWIp
+IDwyNTI0NTMyMy1nYW1lc2d1cnVAdXNlcnMubm9yZXBseS5naXRsYWIuY29tPoiT
+BBMWCgA7FiEExmYvEy4WnEgCYnsezbzLRKYINj4FAmjDVkgCGwMFCwkIBwICIgIG
+FQoJCAsCBBYCAwECHgcCF4AACgkQzbzLRKYINj7uhAEAu4jowCYO96c5tLkfubzo
+ALDzGmU2B4jtcjvNRPKtfh4BAMWRcpz41GhPVcwbLvvVuucks4NKfc2atS4/+i1z
+B+YHtCBnZ0BkZXNrdG9wIDxjaG93bl90ZWVAcHJvdG9uLm1lPoiQBBMWCgA4FiEE
+xmYvEy4WnEgCYnsezbzLRKYINj4FAmlIqUECGwMFCwkIBwIGFQoJCAsCBBYCAwEC
+HgECF4AACgkQzbzLRKYINj6t/gD9FlMrEv1ZfTwSZWnlFDkiPZNVcPLtTdDcup8p
+qlOS9o8BAI1V2mVr8gycAUc9K3JFSIYUGrqzyFiGIlpeYLpmcecLuDgEaMK+LxIK
+KwYBBAGXVQEFAQEHQJAgIeT9A28rgDYTEIPLI4cG8/1QqzuOqoDtFQ3XJNYLAwEI
+B4h4BBgWCAAgFiEExmYvEy4WnEgCYnsezbzLRKYINj4FAmjCvi8CGwwACgkQzbzL
+RKYINj5GVwD+LZzVDnJivWZmlOdjnjaMYtYmB/DMSFwZ+FRcNsxpDM4BAP0r6fFc
+Kpv1aDkbgz7P85+tEEv0cLSMuRKrw+fB9ZoA
+=BZAp
+-----END PGP PUBLIC KEY BLOCK-----""",
 }
 
 STATS_FILE = "/opt/api/stats.json"
