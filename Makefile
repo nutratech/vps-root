@@ -73,6 +73,7 @@ stage/vps: ##H @Remote Stage all configuration files on the remote VPS
 		scripts/gitweb-simplefrontend \
 		scripts/deploy.sh \
 		scripts/gen_services_map.py \
+		scripts/api.py \
 		scripts/homepage.html | \
 		ssh $(VPS) "rm -rf ~/.nginx-ops/staging \
 		            && mkdir -p ~/.nginx-ops/staging \
