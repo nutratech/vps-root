@@ -175,7 +175,7 @@ def generate_html(title, groups, intro_html=None):
     return HTML_TEMPLATE.format(
         title=title,
         content=content_html,
-        build_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z"),
+        build_time="static_build",
         service_count=sum(len(g[1]) for g in groups),
     )
 
@@ -239,7 +239,7 @@ def main():
 
     # Flatten groups for JSON
     json_data = {
-        "generated_at": datetime.now().isoformat(),
+        # "generated_at": datetime.now().isoformat(),
         "groups": [
             {"name": name, "services": services} for name, services in all_groups
         ],
@@ -249,6 +249,32 @@ def main():
     with open(OUTPUT_JSON, "w") as f:
         json.dump(json_data, f, indent=2)
     print(f"Generated JSON data at: {OUTPUT_JSON}")
+
+    # Output 4: Update .env with timestamp
+    ENV_FILE = REPO_ROOT / "opt/my-website/.env"
+    build_time = datetime.now().isoformat()
+
+    env_content = ""
+    if ENV_FILE.exists():
+        with open(ENV_FILE, "r") as f:
+            env_content = f.read()
+
+    # Regex to replace or append PUBLIC_BUILD_TIME
+    if "PUBLIC_BUILD_TIME=" in env_content:
+        env_content = re.sub(
+            r"^PUBLIC_BUILD_TIME=.*$",
+            f"PUBLIC_BUILD_TIME={build_time}",
+            env_content,
+            flags=re.MULTILINE,
+        )
+    else:
+        if env_content and not env_content.endswith("\n"):
+            env_content += "\n"
+        env_content += f"PUBLIC_BUILD_TIME={build_time}\n"
+
+    with open(ENV_FILE, "w") as f:
+        f.write(env_content)
+    print(f"Updated .env with PUBLIC_BUILD_TIME={build_time}")
 
 
 if __name__ == "__main__":

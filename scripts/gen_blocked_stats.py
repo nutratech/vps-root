@@ -101,6 +101,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </body>
 </html>"""
 
+
 def parse_blocked_ips():
     if not BLOCKED_CONF.exists():
         print(f"Warning: {BLOCKED_CONF} not found.")
@@ -108,31 +109,31 @@ def parse_blocked_ips():
 
     entries = []
     current_comment = ""
-    
+
     with open(BLOCKED_CONF, "r") as f:
         for line in f:
             line = line.strip()
             if not line:
                 continue
-            
+
             # Capture comments that precede blocks
             if line.startswith("#"):
                 current_comment = line.lstrip("# ").strip()
                 continue
-            
+
             # Parse deny lines
             # Format: deny 1.2.3.4;
             match = re.match(r"^deny\s+([\d\.]+);", line)
             if match:
                 ip = match.group(1)
                 entries.append({"ip": ip, "comment": current_comment})
-                # Keep comment for next IP if it looks like a group header? 
+                # Keep comment for next IP if it looks like a group header?
                 # Actually, typical format is:
                 # # Header
                 # deny x;
                 # deny y;
                 # So we keep the comment until a new blank line or new comment appears.
-                
+
                 # However, usually there are blank lines between groups.
                 # Let's simple keep the last comment seen.
             else:
@@ -142,25 +143,57 @@ def parse_blocked_ips():
 
     return entries
 
+
 def main():
     entries = parse_blocked_ips()
-    
+
     ip_list_html = ""
     for entry in entries:
-        comment_html = f'<span class="comment">{entry["comment"]}</span>' if entry["comment"] else ""
-        ip_list_html += f'<div class="ip-item"><span>{entry["ip"]}</span>{comment_html}</div>\n'
+        comment_html = (
+            f'<span class="comment">{entry["comment"]}</span>'
+            if entry["comment"]
+            else ""
+        )
+        ip_list_html += (
+            f'<div class="ip-item"><span>{entry["ip"]}</span>{comment_html}</div>\n'
+        )
 
     html = HTML_TEMPLATE.format(
-        count=len(entries),
-        ip_list_html=ip_list_html,
-        generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z")
+        count=len(entries), ip_list_html=ip_list_html, generated_at="Latest (Automated)"
     )
 
     OUTPUT_HTML.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_HTML, "w") as f:
         f.write(html)
-    
+
     print(f"Generated blocked stats: {len(entries)} IPs -> {OUTPUT_HTML}")
+
+    # Update .env with timestamp
+    ENV_FILE = REPO_ROOT / "opt/my-website/.env"
+    build_time = datetime.now().isoformat()
+
+    env_content = ""
+    if ENV_FILE.exists():
+        with open(ENV_FILE, "r") as f:
+            env_content = f.read()
+
+    # Regex to replace or append PUBLIC_BLOCKED_UPDATED_AT
+    if "PUBLIC_BLOCKED_UPDATED_AT=" in env_content:
+        env_content = re.sub(
+            r"^PUBLIC_BLOCKED_UPDATED_AT=.*$",
+            f"PUBLIC_BLOCKED_UPDATED_AT={build_time}",
+            env_content,
+            flags=re.MULTILINE,
+        )
+    else:
+        if env_content and not env_content.endswith("\n"):
+            env_content += "\n"
+        env_content += f"PUBLIC_BLOCKED_UPDATED_AT={build_time}\n"
+
+    with open(ENV_FILE, "w") as f:
+        f.write(env_content)
+    print(f"Updated .env with PUBLIC_BLOCKED_UPDATED_AT={build_time}")
+
 
 if __name__ == "__main__":
     main()
