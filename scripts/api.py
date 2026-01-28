@@ -15,7 +15,9 @@ BLOCKED_CONF_LOCAL = (
 BLOCKED_CONF_SYSTEM = "/etc/nginx/conf.d/blocked_ips.conf"
 
 # Cloudflare Turnstile Secret (Get from ENV or fallback)
-TURNSTILE_SECRET_KEY = os.environ["TURNSTILE_SECRET_KEY"]
+TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY", "")
+if not TURNSTILE_SECRET_KEY:
+    print("WARNING: TURNSTILE_SECRET_KEY not set!")
 CONTACT_INFO = {
     "email": os.environ.get("CONTACT_EMAIL", "shane@nutra.tk"),
     "matrix": os.environ.get("CONTACT_MATRIX", "@gamesguru:matrix.org"),
@@ -79,6 +81,18 @@ def parse_blocked_ips():
 
     return entries
 
+
+@app.route("/api/contact", methods=["POST"])
+def contact():
+    data = request.json
+    token = data.get("token")
+    if not token:
+        return jsonify({"error": "Missing token"}), 400
+
+    if validate_captcha(token):
+        return jsonify(CONTACT_INFO)
+    
+    return jsonify({"error": "Invalid captcha"}), 403
 
 @app.route("/api/blocked")
 def get_blocked():
