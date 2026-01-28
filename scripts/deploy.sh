@@ -262,6 +262,24 @@ if sudo nginx -t; then
         fi
     done
 
+    # Deploy Nutra API
+    if [ -f "$REPO_ROOT/scripts/api.py" ]; then
+        echo "Deploying Nutra API..."
+        sudo mkdir -p /opt/api
+        sudo cp "$REPO_ROOT/scripts/api.py" /opt/api/api.py
+        sudo chmod +x /opt/api/api.py
+
+        # Ensure Flask is installed
+        if ! python3 -c "import flask" 2>/dev/null; then
+            echo "Installing Flask..."
+            sudo apt-get update && sudo apt-get install -y python3-flask || sudo pip3 install flask
+        fi
+
+        echo "Restarting Nutra API service..."
+        sudo systemctl enable nutra-api.service
+        sudo systemctl restart nutra-api.service
+    fi
+
     # Show deployed config files
     echo ""
     echo "Deployed configurations:"

@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+import re
+import os
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+
+# Config
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Config
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BLOCKED_CONF_LOCAL = os.path.join(REPO_ROOT, "etc/nginx/conf.d/blocked_ips.conf")
+BLOCKED_CONF_SYSTEM = "/etc/nginx/conf.d/blocked_ips.conf"
+
+
+def parse_blocked_ips():
+    if os.path.exists(BLOCKED_CONF_LOCAL):
+        conf_path = BLOCKED_CONF_LOCAL
+    else:
+        conf_path = BLOCKED_CONF_SYSTEM
+
+    if not os.path.exists(conf_path):
+        return []
+
+    entries = []
+    current_comment = ""
+
+    try:
+        with open(conf_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+
+                if line.startswith("#"):
+                    current_comment = line.lstrip("# ").strip()
+                    continue
+
+                # Format: deny 1.2.3.4;
+                match = re.match(r"^deny\s+([\d\.]+);", line)
+                if match:
+                    entries.append({"ip": match.group(1), "comment": current_comment})
+    except Exception as e:
+        print(f"Error parsing config: {e}")
+        return []
+
+    return entries
+
+
+@app.route("/api/blocked")
+def get_blocked():
+    entries = parse_blocked_ips()
+    return jsonify({"count": len(entries), "entries": entries})
+
+
+@app.route("/api/health")
+def health():
+    return jsonify({"status": "ok"})
+
+
+if __name__ == "__main__":
+    # Access via Nginx proxy, so listening on localhost is fine
+    app.run(host="127.0.0.1", port=5000)
