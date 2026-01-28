@@ -1,6 +1,11 @@
 import re
 import os
 import json
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
+from email import encoders
 import requests
 from flask import Flask, jsonify, request
 
@@ -171,6 +176,73 @@ def resume():
             return jsonify({"error": "Resume file not found on server"}), 404
 
     return jsonify({"error": "Invalid captcha"}), 403
+
+
+@app.route("/api/send-resume", methods=["POST"])
+def send_resume():
+    data = request.json
+    token = data.get("token")
+    email = data.get("email")
+
+    if not token:
+        return jsonify({"error": "Missing token"}), 400
+    if not email:
+        return jsonify({"error": "Missing email"}), 400
+
+    # Basic email validation
+    if not re.match(r"^[^@]+@[^@]+\.[^@]+$", email):
+        return jsonify({"error": "Invalid email address"}), 400
+
+    if not validate_captcha(token):
+        return jsonify({"error": "Invalid captcha"}), 403
+
+    resume_path = os.environ.get("RESUME_PATH", "/var/www/cv/swe/resume.pdf")
+    if not os.path.exists(resume_path):
+        return jsonify({"error": "Resume file not found"}), 404
+
+    try:
+        # SMTP config from env
+        smtp_host = os.environ.get("SMTP_HOST", "localhost")
+        smtp_port = int(os.environ.get("SMTP_PORT", 25))
+        smtp_user = os.environ.get("SMTP_USER", "")
+        smtp_pass = os.environ.get("SMTP_PASSWORD", "")
+        smtp_from = os.environ.get("SMTP_FROM", "noreply@nutra.tk")
+
+        # Build email
+        msg = MIMEMultipart()
+        msg["From"] = smtp_from
+        msg["To"] = email
+        msg["Subject"] = "Shane J. - Resume"
+
+        body = """Hi,
+
+You requested a copy of Shane J.'s resume. Please find it attached.
+
+Best regards,
+Nutra.tk
+"""
+        msg.attach(MIMEText(body, "plain"))
+
+        # Attach PDF
+        with open(resume_path, "rb") as f:
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(f.read())
+            encoders.encode_base64(part)
+            part.add_header("Content-Disposition", "attachment", filename="resume.pdf")
+            msg.attach(part)
+
+        # Send
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
+            if smtp_user and smtp_pass:
+                server.starttls()
+                server.login(smtp_user, smtp_pass)
+            server.sendmail(smtp_from, email, msg.as_string())
+
+        return jsonify({"success": True, "message": f"Resume sent to {email}"})
+
+    except Exception as e:
+        print(f"Email error: {e}")
+        return jsonify({"error": "Failed to send email"}), 500
 
 
 @app.route("/api/server-info")
