@@ -1,8 +1,6 @@
-#!/usr/bin/env python3
 import re
 import os
-from flask import Flask, jsonify
-import re
+import json
 import requests
 from flask import Flask, jsonify, request
 
@@ -149,6 +147,17 @@ def resume():
             return jsonify({"error": "Resume file not found on server"}), 404
 
     return jsonify({"error": "Invalid captcha"}), 403
+
+
+@app.route("/api/server-info")
+def server_info():
+    stats = get_combined_stats()
+    return jsonify(
+        {
+            "location": stats.get("server_location", "Unknown"),
+            "time": stats.get("updated_at", ""),
+        }
+    )
 
 
 if __name__ == "__main__":
