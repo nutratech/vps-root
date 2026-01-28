@@ -8,6 +8,19 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
+@app.route("/")
+def index():
+    return jsonify({
+        "service": "Nutra API",
+        "description": "Backend API for Nutra.tk services",
+        "endpoints": [
+            "/api/blocked",
+            "/api/contact",
+            "/api/resume",
+            "/api/health"
+        ]
+    })
+
 # Constants
 BLOCKED_CONF_LOCAL = (
     "/home/shane/repos/nutra/vps-root/etc/nginx/conf.d/blocked_ips.conf"
@@ -15,9 +28,7 @@ BLOCKED_CONF_LOCAL = (
 BLOCKED_CONF_SYSTEM = "/etc/nginx/conf.d/blocked_ips.conf"
 
 # Cloudflare Turnstile Secret (Get from ENV or fallback)
-TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY", "")
-if not TURNSTILE_SECRET_KEY:
-    print("WARNING: TURNSTILE_SECRET_KEY not set!")
+TURNSTILE_SECRET_KEY = os.environ["TURNSTILE_SECRET_KEY"]
 CONTACT_INFO = {
     "email": os.environ.get("CONTACT_EMAIL", "shane@nutra.tk"),
     "matrix": os.environ.get("CONTACT_MATRIX", "@gamesguru:matrix.org"),
@@ -103,6 +114,25 @@ def get_blocked():
 @app.route("/api/health")
 def health():
     return jsonify({"status": "ok"})
+
+
+@app.route("/api/resume", methods=["POST"])
+def resume():
+    data = request.json
+    token = data.get("token")
+    if not token:
+        return jsonify({"error": "Missing token"}), 400
+
+    if validate_captcha(token):
+        # Allow defining resume path via env, but default to standard location
+        resume_path = os.environ.get("RESUME_PATH", "/var/www/cv/swe/resume.pdf")
+        if os.path.exists(resume_path):
+             from flask import send_file
+             return send_file(resume_path, as_attachment=True, download_name="resume.pdf")
+        else:
+            return jsonify({"error": "Resume file not found on server"}), 404
+    
+    return jsonify({"error": "Invalid captcha"}), 403
 
 
 if __name__ == "__main__":
