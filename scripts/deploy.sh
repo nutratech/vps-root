@@ -262,6 +262,13 @@ if sudo nginx -t; then
         fi
     done
 
+    # Deploy Nutra Env
+    if [ -f "$REPO_ROOT/etc/nutra.env" ]; then
+        echo "Deploying nutra.env..."
+        sudo cp "$REPO_ROOT/etc/nutra.env" /etc/nutra.env
+        sudo chmod 600 /etc/nutra.env
+    fi
+
     # Deploy Nutra API
     if [ -f "$REPO_ROOT/scripts/api.py" ]; then
         echo "Deploying Nutra API..."

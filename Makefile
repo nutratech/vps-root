@@ -62,6 +62,7 @@ stage/vps: ##H @Remote Stage all configuration files on the remote VPS
 	# Tar files and stream to remote
 	tar cz \
 		etc/nginx/conf.d/*.conf \
+		etc/nutra.env \
 		etc/nginx/conf.d/$(ENV)/*.conf \
 		etc/systemd/system/*.service \
 		etc/continuwuity/*.toml \
