@@ -265,6 +265,7 @@ if sudo nginx -t; then
     # Deploy Stats Collection
     if [ -f "$REPO_ROOT/scripts/collect_stats.sh" ]; then
         echo "Deploying stats collection..."
+        sudo mkdir -p /opt/vps-root/scripts
         sudo cp "$REPO_ROOT/scripts/collect_stats.sh" /opt/vps-root/scripts/collect_stats.sh
         sudo chmod +x /opt/vps-root/scripts/collect_stats.sh
         sudo systemctl enable nutra-stats.timer
