@@ -165,18 +165,13 @@ show_diff "$ENV"
 
 echo "Installing new configurations..."
 
-# Cleanup disabled configurations
-for FILE in "$NGINX_CONF_SRC"/*.conf.disabled; do
-    [ -e "$FILE" ] || continue
-    BASENAME=$(basename "$FILE")
-    if [[ "$BASENAME" =~ ^(.*)\.conf\.disabled$ ]]; then
-        STEM="${BASH_REMATCH[1]}"
-        if [ -f "$DEST_CONF_DIR/$STEM.conf" ]; then
-            echo "Removing disabled config: $STEM.conf"
-            sudo rm "$DEST_CONF_DIR/$STEM.conf"
-        fi
-    fi
-done
+# Clean Install: Remove existing configs to prevent stale files
+echo "Cleaning destination directory $DEST_CONF_DIR (preserving secrets.conf)..."
+if [ -d "$DEST_CONF_DIR" ]; then
+    # Find and delete files, excluding secrets.conf
+    # We delete *.conf and *.disabled to keep it clean
+    sudo find "$DEST_CONF_DIR" -maxdepth 1 -type f \( -name "*.conf" -o -name "*.disabled" \) ! -name "secrets.conf" -delete
+fi
 
 # Install configs
 find "$NGINX_CONF_SRC" -name "*.conf" | while read -r FILE; do

@@ -94,7 +94,7 @@ import argparse
 import sys
 
 
-def get_all_services(custom_config_path=None):
+def get_all_services(custom_config_paths=None):
     # Regex to find "Version X: Description" lines
     version_pattern = re.compile(r"^\s*#\s*Version\s+(\w+):\s*(.+)$", re.MULTILINE)
     service_pattern = re.compile(r"^\s*#\s*Service:\s*(.+?)\s*\|\s*(.+)$", re.MULTILINE)
@@ -102,19 +102,23 @@ def get_all_services(custom_config_path=None):
     services_git = parse_file(NGINX_CONF, version_pattern, is_version=True)
 
     NGINX_CONF_DIR = REPO_ROOT / "etc/nginx/conf.d"
+    conf_files = []
 
-    # Use custom path if provided, otherwise scan all .conf files
-    if custom_config_path:
-        path = Path(custom_config_path)
-        if path.is_dir():
-            conf_files = list(path.rglob("*.conf"))
-            print(f"Scanning custom directory: {path} ({len(conf_files)} files)")
-        elif path.exists():
-            conf_files = [path]
-            print(f"Using custom config file: {path}")
-        else:
-            print(f"Warning: Custom config not found at {path}")
-            conf_files = []
+    # Use custom paths if provided, otherwise scan default directory
+    if custom_config_paths:
+        for path_str in custom_config_paths:
+            path = Path(path_str)
+            if path.is_dir():
+                found = list(path.rglob("*.conf"))
+                print(f"Scanning directory: {path} ({len(found)} files)")
+                conf_files.extend(found)
+            elif path.exists():
+                print(f"Using config file: {path}")
+                conf_files.append(path)
+            else:
+                print(f"Warning: Config path not found at {path}")
+
+        # Deduplicate while preserving order? No need, list is fine.
     elif NGINX_CONF_DIR.exists():
         conf_files = list(NGINX_CONF_DIR.rglob("*.conf"))
         print(f"Scanning {len(conf_files)} config files in {NGINX_CONF_DIR}...")
@@ -123,7 +127,15 @@ def get_all_services(custom_config_path=None):
         conf_files = []
 
     services_other = []
+    # Deduplicate files based on absolute path
+    seen_files = set()
+
     for conf_file in conf_files:
+        abs_path = conf_file.resolve()
+        if abs_path in seen_files:
+            continue
+        seen_files.add(abs_path)
+
         # Skip the git-http conf as it's parsed separately
         if conf_file.name in ["git-http.conf", "git-http.dev.conf"]:
             continue
@@ -172,13 +184,16 @@ def main():
     parser = argparse.ArgumentParser(
         description="Generate HTML services map from Nginx config"
     )
+    # nargs='*' allows 0 or more arguments (list of strings)
     parser.add_argument(
-        "config_path", nargs="?", help="Path to the Nginx configuration file"
+        "config_paths",
+        nargs="*",
+        help="Paths to Nginx configuration files or directories",
     )
     args = parser.parse_args()
 
     print(f"Reading configs...")
-    services_git, services_other = get_all_services(args.config_path)
+    services_git, services_other = get_all_services(args.config_paths)
 
     # Prefix Git services with the correct domain
     for s in services_git:

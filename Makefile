@@ -58,7 +58,7 @@ VPS := $(VPS_USER)@$(VPS_HOST)
 .PHONY: stage/vps
 stage/vps: ##H @Remote Stage all configuration files on the remote VPS
 	@echo "Staging files on $(VPS_HOST) (ENV=$(ENV))..."
-	python3 scripts/gen_services_map.py etc/nginx/conf.d/$(ENV)/default.conf
+	python3 scripts/gen_services_map.py etc/nginx/conf.d/$(ENV)/**/*.conf
 	# Tar files and stream to remote
 	tar cz \
 		etc/nginx/conf.d/*.conf \
