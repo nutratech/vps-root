@@ -97,6 +97,15 @@ certbot/nginx: ##H @Remote Run certbot on remote VPS
 	@echo "Running certbot on $(VPS_HOST)..."
 	ssh -t $(VPS) "sudo certbot --nginx"
 
+# Application Deployment
+.PHONY: build/website
+build/website: ##H @Local Build the static website
+	$(MAKE) -C opt/my-website build
+
+.PHONY: deploy/website
+deploy/website: ##H @Remote Deploy the static website
+	$(MAKE) -C opt/my-website deploy VPS="$(VPS)"
+
 # Direct Local Deployment (No Staging)
 .PHONY: diff/local
 diff/local: ##H @Local Show diff against system config
