@@ -124,6 +124,7 @@ def get_combined_stats():
                 if content:
                     # Remove any non-printable characters manually
                     import string
+
                     printable = set(string.printable)
                     content = "".join(filter(lambda x: x in printable, content))
                     f2b_stats = json.loads(content)
@@ -215,7 +216,7 @@ def send_resume():
         smtp_user = os.environ["SMTP_USER"]
         smtp_pass = os.environ["SMTP_PASSWORD"]
         smtp_from_env = os.environ["SMTP_FROM"]
-        
+
         # Extract clean email for envelope sender
         _, envelope_from = utils.parseaddr(smtp_from_env)
         if not envelope_from or "@" not in envelope_from:
@@ -256,7 +257,9 @@ Nutra.tk
             # Use clean envelope_from
             server.sendmail(envelope_from, recipient_email, msg.as_string())
 
-        return jsonify({"success": True, "message": f"Resume sent to {recipient_email}"})
+        return jsonify(
+            {"success": True, "message": f"Resume sent to {recipient_email}"}
+        )
 
     except Exception as e:
         error_msg = str(e)
