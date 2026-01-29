@@ -20,11 +20,20 @@ show_diff() {
     echo "Detected changes (diff) for ENV=$ENV:"
     # We can't use simple diff -r because we need to exclude secrets.conf if encrypted
     # So we loop through source files
-    for FILE in "$NGINX_CONF_SRC"/*.conf; do
+    # We loop through source files using find to include subdirectories
+    find "$NGINX_CONF_SRC" -name "*.conf" | while read -r FILE; do
         BASENAME=$(basename "$FILE")
         if [ "$BASENAME" = "secrets.conf" ] && ! is_text_file "$FILE"; then
             echo "Skipping encrypted secrets.conf diff..."
             continue
+        fi
+
+        # Filter based on directory structure (dev/ vs prod/)
+        if [[ "$FILE" == *"/dev/"* ]]; then
+            if [ "$ENV" != "dev" ]; then continue; fi
+        fi
+        if [[ "$FILE" == *"/prod/"* ]]; then
+            if [ "$ENV" != "prod" ]; then continue; fi
         fi
 
         # Logic to check against default.conf
