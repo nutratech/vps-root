@@ -33,7 +33,7 @@ BLOCKED_CONF_SYSTEM = "/etc/nginx/conf.d/blocked_ips.conf"
 TURNSTILE_SECRET_KEY = os.environ["TURNSTILE_SECRET_KEY"]
 CONTACT_INFO = {
     "email": os.environ.get("CONTACT_EMAIL", "shane@nutra.tk"),
-    "matrix": os.environ.get("CONTACT_MATRIX", "@gamesguru:matrix.org"),
+    "matrix": os.environ.get("CONTACT_MATRIX", "@gamesguru:matrix.org, @gg:nutra.tk"),
     "gpg_description": """pub   ed25519/CDBCCB44A608363E 2025-09-11 [SC]
       C6662F132E169C4802627B1ECDBCCB44A608363E
 uid  Shane J. (GIT SIGN+ENCRYPT KEY [DESKTOP])
