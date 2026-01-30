@@ -248,6 +248,7 @@ def main():
     os.makedirs(OUTPUT_JSON.parent, exist_ok=True)
     with open(OUTPUT_JSON, "w") as f:
         json.dump(json_data, f, indent=2)
+        f.write("\n")
     print(f"Generated JSON data at: {OUTPUT_JSON}")
 
     # Output 4: Update .env with timestamp

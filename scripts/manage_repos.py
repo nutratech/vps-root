@@ -33,6 +33,7 @@ def load_repos():
 def save_repos(data):
     with open(REPO_JSON, "w") as f:
         json.dump(data, f, indent=2)
+        f.write("\n")
 
 
 def remote_exists(remote, path):
