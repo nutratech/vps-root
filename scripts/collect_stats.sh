@@ -3,6 +3,7 @@
 # Needs to run as root (e.g., via systemd timer or cron)
 
 OUTPUT_FILE="/opt/api/stats.json"
+ARCHIVE_FILE="/opt/api/stats.$(date +%s).json"
 
 # Collect SSHD stats
 SSHD_BANNED=$(fail2ban-client status sshd | grep "Currently banned" | awk '{print $NF}')
@@ -17,7 +18,7 @@ if [ -z "$GIT_BANNED" ]; then GIT_BANNED=0; fi
 if [ -z "$GIT_TOTAL" ]; then GIT_TOTAL=0; fi
 
 # Write JSON
-cat <<EOF >"$OUTPUT_FILE"
+cat <<EOF >"$ARCHIVE_FILE"
 {
   "updated_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
   "sshd": {
@@ -30,8 +31,16 @@ cat <<EOF >"$OUTPUT_FILE"
     "total_banned": ${GIT_TOTAL:-0},
     "banned_ips": "${GIT_LIST:-}"
   },
+  "matrix_federation": {
+    "active_servers": $(grep "/_matrix/" /var/log/nginx/access.log 2>/dev/null | grep " 200 " | awk '{print $1}' | sort | uniq | wc -l),
+    "ips": "$(grep "/_matrix/" /var/log/nginx/access.log 2>/dev/null | grep " 200 " | awk '{print $1}' | sort | uniq | xargs)"
+  },
   "server_location": "San Jose, CA" 
 }
 EOF
-chown www-data:www-data "$OUTPUT_FILE"
-chmod 644 "$OUTPUT_FILE"
+chown www-data:www-data "$ARCHIVE_FILE"
+chmod 644 "$ARCHIVE_FILE"
+
+# Symlink to latest
+ln -sf "$ARCHIVE_FILE" "$OUTPUT_FILE"
+chown -h www-data:www-data "$OUTPUT_FILE"
