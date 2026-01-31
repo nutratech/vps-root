@@ -332,10 +332,7 @@ if sudo nginx -t; then
             sudo chmod +x /opt/api/api.py
 
             # Ensure Flask is installed
-            if ! python3 -c "import flask" 2>/dev/null; then
-                echo "Installing Flask..."
-                sudo apt-get update && sudo apt-get install -y python3-flask || sudo pip3 install flask
-            fi
+            which flask || exit 1
 
             echo "Restarting Nutra API service..."
             sudo systemctl enable nutra-api.service
