@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.service": "ini",
+        "*.toml": "ini"
+    }
+}
