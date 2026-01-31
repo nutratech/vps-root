@@ -173,7 +173,6 @@ NGINX_ONLY=""
 while [[ "$#" -gt 0 ]]; do
     case $1 in
     --nginx-only) NGINX_ONLY=1 ;;
-    --fail2ban-only) FAIL2BAN_ONLY=1 ;;
     *)
         echo "Unknown parameter: $1"
         exit 1
@@ -184,31 +183,6 @@ done
 
 echo "Deploying for environment: $ENV"
 [ -n "$NGINX_ONLY" ] && echo "Mode: Nginx Configuration Only"
-[ -n "$FAIL2BAN_ONLY" ] && echo "Mode: Fail2Ban Configuration Only"
-
-# Fail2Ban Only Mode
-if [ -n "$FAIL2BAN_ONLY" ]; then
-    if [ -d "$REPO_ROOT/etc/fail2ban" ]; then
-        echo "Deploying Fail2Ban configurations..."
-        sudo cp "$REPO_ROOT/etc/fail2ban/filter.d/"* /etc/fail2ban/filter.d/ || true
-        sudo cp "$REPO_ROOT/etc/fail2ban/jail.d/"* /etc/fail2ban/jail.d/ || true
-        # Copy jail.local if it exists
-        if [ -f "$REPO_ROOT/etc/fail2ban/jail.local" ]; then
-            sudo cp "$REPO_ROOT/etc/fail2ban/jail.local" /etc/fail2ban/jail.local
-        fi
-
-        if sudo fail2ban-client reload; then
-            echo "Fail2Ban reloaded. Deployment successful."
-            exit 0
-        else
-            echo "Error: Failed to reload Fail2Ban."
-            exit 1
-        fi
-    else
-        echo "No Fail2Ban configurations found in repo."
-        exit 0
-    fi
-fi
 
 # Always show diff before installing
 show_diff "$ENV"
@@ -268,24 +242,26 @@ if sudo nginx -t; then
             sudo cp -r "$REPO_ROOT/scripts/gitweb-simplefrontend/"* /srv/git/
             sudo chown -R git:git /srv/git/
         fi
+    fi
 
-        # Deploy Fail2Ban Configurations
-        if [ -d "$REPO_ROOT/etc/fail2ban" ]; then
-            echo "Deploying Fail2Ban configurations..."
-            sudo cp "$REPO_ROOT/etc/fail2ban/filter.d/"* /etc/fail2ban/filter.d/ || true
-            sudo cp "$REPO_ROOT/etc/fail2ban/jail.d/"* /etc/fail2ban/jail.d/ || true
-            # Copy jail.local if it exists
-            if [ -f "$REPO_ROOT/etc/fail2ban/jail.local" ]; then
-                sudo cp "$REPO_ROOT/etc/fail2ban/jail.local" /etc/fail2ban/jail.local
-            fi
-
-            if sudo fail2ban-client reload; then
-                echo "Fail2Ban reloaded."
-            else
-                echo "Warning: Failed to reload Fail2Ban."
-            fi
+    # Deploy Fail2Ban Configurations (Always run even in Nginx-Only mode)
+    if [ -d "$REPO_ROOT/etc/fail2ban" ]; then
+        echo "Deploying Fail2Ban configurations..."
+        sudo cp "$REPO_ROOT/etc/fail2ban/filter.d/"* /etc/fail2ban/filter.d/ || true
+        sudo cp "$REPO_ROOT/etc/fail2ban/jail.d/"* /etc/fail2ban/jail.d/ || true
+        # Copy jail.local if it exists
+        if [ -f "$REPO_ROOT/etc/fail2ban/jail.local" ]; then
+            sudo cp "$REPO_ROOT/etc/fail2ban/jail.local" /etc/fail2ban/jail.local
         fi
 
+        if sudo fail2ban-client reload; then
+            echo "Fail2Ban reloaded."
+        else
+            echo "Warning: Failed to reload Fail2Ban."
+        fi
+    fi
+
+    if [ -z "$NGINX_ONLY" ]; then
         # Deploy Homepage (already generated during local staging)
         if [ -f "$REPO_ROOT/scripts/homepage.html" ]; then
             echo "Deploying Homepage..."
