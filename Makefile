@@ -74,6 +74,7 @@ else
 endif
 
 VPS := $(VPS_USER)@$(VPS_HOST)
+BACKUP_DIR := $(HOME)/.backups/rocksdb_backups
 
 .PHONY: stage/vps
 stage/vps: ##H @Remote Stage all configuration files on the remote VPS
@@ -189,6 +190,55 @@ else
 	@echo "Listing certificates..."
 	sudo certbot certificates
 endif
+
+# ----------------- Safe Migration -----------------
+
+.PHONY: backup/conduwuit
+backup/conduwuit: ##H @Remote Safe Backup: Stop -> Stream to $(BACKUP_DIR) -> Start
+	@echo "\033[1;33m[!] WARNING: This will temporarily STOP Matrix services to backup the DB.\033[0m"
+	@read -p "Are you sure? [y/N] " ans && [ $${ans:-N} = y ]
+	@mkdir -p $(BACKUP_DIR)
+	@echo "1. Stopping services on $(VPS_HOST)..."
+	@ssh -t $(VPS) "sudo systemctl stop continuwuity conduwuit || true"
+	@echo "2. Streaming backup to $(BACKUP_DIR)/conduwuit_$$(date +%s).tar.gz ..."
+	@ssh $(VPS) "sudo tar cz -C /var/lib continuwuity" > $(BACKUP_DIR)/conduwuit_$$(date +%s).tar.gz
+	@echo "   Backup complete."
+	@echo "3. Restarting services..."
+	@ssh -t $(VPS) "sudo systemctl start continuwuity || sudo systemctl start conduwuit || true"
+	@echo "\033[1;32mBackup Complete!\033[0m"
+
+.PHONY: run/conduwuit-local
+run/conduwuit-local: ##H @Local Run Conduwuit locally using latest backup
+	@echo "Finding latest backup in $(BACKUP_DIR)..."
+	$(eval LATEST_BACKUP := $(shell ls -t $(BACKUP_DIR)/conduwuit_*.tar.gz | head -1))
+	@if [ -z "$(LATEST_BACKUP)" ]; then echo "No backup found!"; exit 1; fi
+	@echo "Using: $(LATEST_BACKUP)"
+	@mkdir -p /tmp/conduwuit-test-db
+	@rm -rf /tmp/conduwuit-test-db/*
+	@echo "Extracting to /tmp/conduwuit-test-db..."
+	@tar xf "$(LATEST_BACKUP)" -C /tmp/conduwuit-test-db
+	@echo "Generate temp config..."
+	@cp etc/conduwuit/conduwuit.toml /tmp/conduwuit-local.toml
+	@sed -i 's|database_path = .*|database_path = "/tmp/conduwuit-test-db/continuwuity/"|' /tmp/conduwuit-local.toml
+	@sed -i 's|server_name = .*|server_name = "localhost"|' /tmp/conduwuit-local.toml
+	@echo "Starting continuwuity..."
+	@continuwuity --config /tmp/conduwuit-local.toml
+
+.PHONY: migrate/conduwuit
+migrate/conduwuit: ##H @Remote Safe Migration: Stop -> Backup -> Deploy -> Start
+	@echo "\033[1;33m[!] WARNING: This will stop Matrix services, backup DB locally, and deploy.\033[0m"
+	@read -p "Are you sure? [y/N] " ans && [ $${ans:-N} = y ]
+	@mkdir -p $(BACKUP_DIR)
+	@echo "1. Stopping services on $(VPS_HOST)..."
+	@ssh -t $(VPS) "sudo systemctl stop continuwuity conduwuit || true"
+	@echo "2. Streaming backup to $(BACKUP_DIR)/conduwuit_$$(date +%s).tar.gz ..."
+	@ssh $(VPS) "sudo tar cz -C /var/lib continuwuity" > $(BACKUP_DIR)/conduwuit_$$(date +%s).tar.gz
+	@echo "   Backup complete."
+	@echo "3. Deploying new configuration..."
+	@$(MAKE) deploy/vps ENV=$(ENV)
+	@echo "4. Starting new service and disabling old..."
+	@ssh -t $(VPS) "sudo systemctl start conduwuit && sudo systemctl disable continuwuity --now || true"
+	@echo "\033[1;32mMigration Complete!\033[0m"
 
 # ----------------- Git Repo Management -----------------
 
