@@ -89,6 +89,9 @@ stage/nginx: stage/vps
 .PHONY: deploy/vps
 deploy/vps: ##H @Remote Deploy staged files to remote VPS
 deploy/vps: stage/vps
+	@echo "Logging deployment..."
+	@echo "$(shell date '+%Y-%m-%d %H:%M:%S') [$(ENV)] User: $(USER) Commit: \
+		$(shell git rev-parse --short HEAD) - $(shell git log -1 --format='%s')" >> deployment.log
 	@echo "Connecting to $(VPS_HOST)..."
 	ssh -t $(VPS) "bash ~/.nginx-ops/staging/scripts/deploy.sh test $(ENV) && \
 	               bash ~/.nginx-ops/staging/scripts/deploy.sh $(ENV)"
@@ -142,6 +145,8 @@ ifdef SUDO_USER
 	su -P $(SUDO_USER) -c "bash scripts/deploy.sh $(ENV)"
 else
 	@echo "Deploying locally..."
+	@echo "$(shell date '+%Y-%m-%d %H:%M:%S') [$(ENV)] User: $(USER) \
+		Commit: $(shell git rev-parse --short HEAD) - $(shell git log -1 --format='%s')" >> deployment.log
 	bash scripts/deploy.sh $(ENV)
 endif
 
