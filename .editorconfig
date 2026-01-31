@@ -10,7 +10,7 @@ trim_trailing_whitespace = true
 max_line_length = 100
 
 
-[{default,default.conf},*.conf]
+[{default,default.conf},*.conf,*.local]
 indent_size = 4
 
 

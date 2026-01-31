@@ -66,20 +66,23 @@ show_diff() {
         diff -u --color=always /etc/gitweb.conf "$GITWEB_CONF_SRC" || true
     fi
 
-    # Diff other system files
-    echo "Checking other system files..."
-    for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse"; do
+    # Diff configurations recursively
+    echo "Checking configuration files..."
+    for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse" "etc/fail2ban"; do
         if [ -d "$REPO_ROOT/$DIR" ]; then
-            for FILE in "$REPO_ROOT/$DIR"/*; do
-                [ -f "$FILE" ] || continue
-                TARGET="/$DIR/$(basename "$FILE")"
-                [ "$DIR" == "opt/stalwart/etc" ] && TARGET="/opt/stalwart/etc/$(basename "$FILE")"
+            find "$REPO_ROOT/$DIR" -type f | while read -r FILE; do
+                REL_PATH="${FILE#$REPO_ROOT/$DIR/}"
+                TARGET="/$DIR/$REL_PATH"
 
                 if [ -f "$TARGET" ]; then
-                    echo "Diff for $TARGET:"
-                    diff -u --color=always "$TARGET" "$FILE" || true
+                    # Silence output if no diff, only showing diff output if differences exist
+                    if ! diff -q "$TARGET" "$FILE" >/dev/null 2>&1; then
+                        echo "Diff for $TARGET:"
+                        diff -u --color=always "$TARGET" "$FILE" || true
+                    fi
                 else
                     echo "New file: $TARGET"
+                    diff -u --color=always /dev/null "$FILE" || true
                 fi
             done
         fi
