@@ -4,6 +4,7 @@ set -e
 # Default to the parent directory of this script (Repo Root)
 REPO_ROOT=$(dirname "$(dirname "$(realpath "$0")")")
 NGINX_CONF_SRC="$REPO_ROOT/etc/nginx/conf.d"
+NGINX_SNIPPETS_SRC="$REPO_ROOT/etc/nginx/snippets"
 GITWEB_CONF_SRC="$REPO_ROOT/etc/gitweb.conf"
 DEST_CONF_DIR="/etc/nginx/conf.d"
 
@@ -102,7 +103,14 @@ if [ "$1" = "test" ]; then
     TMP_WORK_DIR=$(mktemp -d)
     TMP_NGINX_CONF="$TMP_WORK_DIR/nginx.conf"
     TMP_CONF_D="$TMP_WORK_DIR/conf.d"
+    TMP_SNIPPETS="$TMP_WORK_DIR/snippets"
     mkdir -p "$TMP_CONF_D"
+    mkdir -p "$TMP_SNIPPETS"
+
+    # Copy snippets to temp dir
+    if [ -d "$NGINX_SNIPPETS_SRC" ]; then
+        cp "$NGINX_SNIPPETS_SRC"/*.conf "$TMP_SNIPPETS/"
+    fi
 
     # Copy config files to temp dir for testing, respecting secrets
     # Copy config files to temp dir for testing, respecting secrets
@@ -132,6 +140,8 @@ if [ "$1" = "test" ]; then
     # Rewrite absolute paths to the temp directory for testing
     # This prevents failures when a config includes another file that hasn't been deployed yet
     sed -i "s|/etc/nginx/conf.d/|$TMP_CONF_D/|g" "$TMP_CONF_D"/*.conf
+    # Rewrite snippet paths to temp dir
+    sed -i "s|snippets/|$TMP_SNIPPETS/|g" "$TMP_CONF_D"/*.conf
 
     # Generate test nginx.conf
     # We strictly replace the include path
@@ -211,6 +221,13 @@ find "$NGINX_CONF_SRC" -name "*.conf" | while read -r FILE; do
     echo "Installing $BASENAME..."
     sudo cp "$FILE" "$DEST_CONF_DIR/"
 done
+
+# Install snippets
+if [ -d "$NGINX_SNIPPETS_SRC" ]; then
+    echo "Installing snippets..."
+    sudo mkdir -p /etc/nginx/snippets
+    sudo cp "$NGINX_SNIPPETS_SRC"/*.conf /etc/nginx/snippets/
+fi
 
 echo "Verifying configuration..."
 if [ -n "$DEBUG" ]; then
