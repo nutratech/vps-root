@@ -243,6 +243,23 @@ if sudo nginx -t; then
             sudo chown -R git:git /srv/git/
         fi
 
+        # Deploy Fail2Ban Configurations
+        if [ -d "$REPO_ROOT/etc/fail2ban" ]; then
+            echo "Deploying Fail2Ban configurations..."
+            sudo cp "$REPO_ROOT/etc/fail2ban/filter.d/"* /etc/fail2ban/filter.d/ || true
+            sudo cp "$REPO_ROOT/etc/fail2ban/jail.d/"* /etc/fail2ban/jail.d/ || true
+            # Copy jail.local if it exists
+            if [ -f "$REPO_ROOT/etc/fail2ban/jail.local" ]; then
+                sudo cp "$REPO_ROOT/etc/fail2ban/jail.local" /etc/fail2ban/jail.local
+            fi
+
+            if sudo fail2ban-client reload; then
+                echo "Fail2Ban reloaded."
+            else
+                echo "Warning: Failed to reload Fail2Ban."
+            fi
+        fi
+
         # Deploy Homepage (already generated during local staging)
         if [ -f "$REPO_ROOT/scripts/homepage.html" ]; then
             echo "Deploying Homepage..."
