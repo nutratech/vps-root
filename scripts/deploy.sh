@@ -324,20 +324,21 @@ if sudo nginx -t; then
             sudo chmod 600 /etc/nutra.env
         fi
 
-        # Deploy Nutra API
-        if [ -f "$REPO_ROOT/opt/api/api.py" ]; then
-            echo "Deploying Nutra API..."
-            sudo mkdir -p /opt/api
-            sudo cp "$REPO_ROOT/opt/api/api.py" /opt/api/api.py
-            sudo chmod +x /opt/api/api.py
+    fi
 
-            # Ensure Flask is installed
-            which flask || exit 1
+    # Deploy Nutra API
+    if [ -f "$REPO_ROOT/opt/api/api.py" ]; then
+        echo "Deploying Nutra API..."
+        sudo mkdir -p /opt/api
+        sudo cp "$REPO_ROOT/opt/api/api.py" /opt/api/api.py
+        sudo chmod +x /opt/api/api.py
 
-            echo "Restarting Nutra API service..."
-            sudo systemctl enable nutra-api.service
-            sudo systemctl restart nutra-api.service
-        fi
+        # Ensure Flask is installed
+        which flask || exit 1
+
+        echo "Restarting Nutra API service..."
+        sudo systemctl enable nutra-api.service
+        sudo systemctl restart nutra-api.service
     fi
 
     # Show deployed config files
