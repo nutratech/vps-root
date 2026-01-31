@@ -86,6 +86,7 @@ stage/vps: ##H @Remote Stage all configuration files on the remote VPS
 		etc/nutra.env \
 		etc/nginx/conf.d/$(ENV)/*.conf \
 		etc/systemd/system/*.service \
+		etc/fail2ban \
 		etc/conduwuit/*.toml \
 		etc/matrix-conduit/*.toml \
 		etc/matrix-synapse/**/*.yaml \
@@ -122,9 +123,18 @@ deploy/nginx: stage/nginx
 	@echo "Logging deployment..."
 	@echo "$(shell date '+%Y-%m-%d %H:%M:%S') [$(ENV)] User: $(USER) (Nginx Only) \
 		Commit: $(shell git describe --always --dirty) - $(shell git log -1 --format='%s')" >> deployment.log
-	@echo "Connecting to $(VPS_HOST)..."
+	echo "Connecting to $(VPS_HOST)..."
 	ssh -t $(VPS) "bash ~/.nginx-ops/staging/scripts/deploy.sh test $(ENV) && \
 	               bash ~/.nginx-ops/staging/scripts/deploy.sh $(ENV) --nginx-only"
+
+.PHONY: deploy/fail2ban
+deploy/fail2ban: ##H @Remote Deploy Fail2Ban configuration only
+deploy/fail2ban: stage/nginx
+	@echo "Logging deployment..."
+	@echo "$(shell date '+%Y-%m-%d %H:%M:%S') [$(ENV)] User: $(USER) (Fail2Ban Only) \
+		Commit: $(shell git describe --always --dirty) - $(shell git log -1 --format='%s')" >> deployment.log
+	@echo "Connecting to $(VPS_HOST)..."
+	ssh -t $(VPS) "bash ~/.nginx-ops/staging/scripts/deploy.sh $(ENV) --fail2ban-only"
 
 .PHONY: certbot/nginx
 certbot/nginx: ##H @Remote Run certbot on remote VPS
