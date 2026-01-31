@@ -1,36 +1,33 @@
-# API
-# API (Disabled in Prod)
-#server {
-#  # Service: API | https://api.nutra.tk
-#  server_name api.nutra.tk;
-#  #listen 80;
-#  listen 443 ssl;
-#  listen 443 quic;
-#  listen [::]:443 quic;
-#  http2 on;
-#  http3 on;
-#  add_header Alt-Svc 'h3=":443"; ma=86400' always;
-#  # HSTS
-#  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
-#  ssl_trusted_certificate /etc/ssl/private/ca-certs.pem;
-#
-#  # Sanic
-#  location / {
-#    proxy_pass http://127.0.0.1:20000;  # API server
-#    # Allow fast streaming HTTP/1.1 pipes (keep-alive, unbuffered)
-#    proxy_http_version 1.1;
-#    proxy_request_buffering off;
-#    proxy_buffering off;
-#    # Proxy forwarding (password configured in app.config.FORWARDED_SECRET)
-#    # and stored in: /etc/nginx/conf.d/secrets.conf
-#    proxy_set_header forwarded "$proxy_forwarded;secret=\"$proxy_secret_key\"";
-#    # Allow websockets and keep-alive (avoid connection: close)
-#    proxy_set_header connection "upgrade";
-#    proxy_set_header upgrade $http_upgrade;
-#  }
-#
-#  # default favicon
-#  location /favicon.ico {
-#    alias /var/www/favicon.gif;
-#  }
-#}
+server {
+    server_name api.nutra.tk;
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    listen 443 quic;
+    listen [::]:443 quic;
+    http2 on;
+    http3 on;
+    add_header Alt-Svc 'h3=":443"; ma=86400' always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+
+    # Note: Ensure Certbot has expanded the cert to include api.nutra.tk or use a wildcard
+    ssl_certificate /etc/letsencrypt/live/nutra.tk/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/nutra.tk/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+    ssl_trusted_certificate /etc/ssl/private/ca-certs.pem;
+
+    add_header X-Debug-Server "API-Prod";
+
+    # Allow CORS
+    add_header Access-Control-Allow-Origin "*";
+    add_header Access-Control-Allow-Methods "GET, POST, OPTIONS";
+    add_header Access-Control-Allow-Headers "Content-Type, Authorization";
+
+    location / {
+        proxy_pass http://127.0.0.1:5000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
