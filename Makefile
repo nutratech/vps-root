@@ -34,6 +34,26 @@ _help:
 					print ""; \
 			}' $(MAKEFILE_LIST)
 
+.PHONY: check-vars
+check-vars: ##H @General Check active configuration variables (Auto-detected)
+	@printf "\033[1;36m--- Makefile Variables ---\033[0m\n"
+	@printf "\033[1;34m%-25s\033[0m : %s\n" "ENV" "$(ENV)"
+	@printf "\033[1;34m%-25s\033[0m : %s\n" "VPS" "$(VPS)"
+	@printf "\n\033[1;36m--- etc/nutra.env Variables ---\033[0m\n"
+	@if [ -f etc/nutra.env ]; then \
+		set -a && source etc/nutra.env 2>/dev/null && set +a; \
+		vars=$$(sed -n 's/^\s*\([A-Z0-9_]\+\)=.*/\1/p' etc/nutra.env | sort | uniq); \
+		for var in $$vars; do \
+			val="$${!var}"; \
+			if [[ "$$var" =~ (PASSWORD|TOKEN|KEY|SECRET|DESC) ]]; then \
+				val="******"; \
+			fi; \
+			printf "\033[1;32m%-25s\033[0m : %s\n" "$$var" "$$val"; \
+		done \
+	else \
+		echo "etc/nutra.env not found."; \
+	fi
+
 
 VPS_HOST ?= dev.nutra.tk
 VPS_USER ?= gg
@@ -90,8 +110,8 @@ stage/nginx: stage/vps
 deploy/vps: ##H @Remote Deploy staged files to remote VPS
 deploy/vps: stage/vps
 	@echo "Logging deployment..."
-	@echo "$(shell date '+%Y-%m-%d %H:%M:%S') [$(ENV)] User: $(USER) Commit: \
-		$(shell git rev-parse --short HEAD) - $(shell git log -1 --format='%s')" >> deployment.log
+	@echo "$(shell date '+%Y-%m-%d %H:%M:%S') [$(ENV)] User: $(USER) \
+		Commit: $(shell git describe --always --dirty) - $(shell git log -1 --format='%s')" >> deployment.log
 	@echo "Connecting to $(VPS_HOST)..."
 	ssh -t $(VPS) "bash ~/.nginx-ops/staging/scripts/deploy.sh test $(ENV) && \
 	               bash ~/.nginx-ops/staging/scripts/deploy.sh $(ENV)"
@@ -146,7 +166,7 @@ ifdef SUDO_USER
 else
 	@echo "Deploying locally..."
 	@echo "$(shell date '+%Y-%m-%d %H:%M:%S') [$(ENV)] User: $(USER) \
-		Commit: $(shell git rev-parse --short HEAD) - $(shell git log -1 --format='%s')" >> deployment.log
+		Commit: $(shell git describe --always --dirty) - $(shell git log -1 --format='%s')" >> deployment.log
 	bash scripts/deploy.sh $(ENV)
 endif
 
