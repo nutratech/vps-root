@@ -116,6 +116,7 @@ run/api: ##H @Local Run the API server locally with dev bypass
 	@echo "Starting API on port 5000..."
 	@set -a && source etc/nutra.env && set +a && \
 	 export CAPTCHA_BYPASS_TOKEN="dev_token" && \
+	 export RESUME_PATH="$(PWD)/opt/api/assets/dummy_resume.pdf" && \
 	 python3 opt/api/api.py
 
 .PHONY: diff/local
