@@ -53,9 +53,8 @@ CONTACT_INFO = {
 }
 
 STATS_FILE = "/opt/api/stats.json"
-
-
-
+if not os.path.exists(STATS_FILE):
+    STATS_FILE = os.path.join(os.getcwd(), "stats.json")
 
 
 def validate_captcha(token):
