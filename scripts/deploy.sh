@@ -167,7 +167,22 @@ fi
 
 # ENV is passed as first argument if not diff/test, default to dev
 ENV="${1:-dev}"
+shift
+# Check for flags
+NGINX_ONLY=""
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+    --nginx-only) NGINX_ONLY=1 ;;
+    *)
+        echo "Unknown parameter: $1"
+        exit 1
+        ;;
+    esac
+    shift
+done
+
 echo "Deploying for environment: $ENV"
+[ -n "$NGINX_ONLY" ] && echo "Mode: Nginx Configuration Only"
 
 # Always show diff before installing
 show_diff "$ENV"
@@ -208,102 +223,105 @@ if sudo nginx -t; then
     echo "Configuration is valid. Reloading Nginx..."
     sudo nginx -s reload
 
-    # Deploy gitweb.conf if it exists
-    if [ -f "$GITWEB_CONF_SRC" ]; then
-        echo "Deploying gitweb.conf..."
-        sudo cp "$GITWEB_CONF_SRC" /etc/gitweb.conf
-    fi
-
-    # Deploy Gitweb frontend assets (Dev Only)
-    if [ "$ENV" == "dev" ] && [ -d "$REPO_ROOT/scripts/gitweb-simplefrontend" ]; then
-        echo "Generating services map..."
-        if [ -f "$REPO_ROOT/scripts/gen_services_map.py" ]; then
-            python3 "$REPO_ROOT/scripts/gen_services_map.py"
+    # --- EVERYTHING BELOW IS SKIPPED IN NGINX_ONLY MODE ---
+    if [ -z "$NGINX_ONLY" ]; then
+        # Deploy gitweb.conf if it exists
+        if [ -f "$GITWEB_CONF_SRC" ]; then
+            echo "Deploying gitweb.conf..."
+            sudo cp "$GITWEB_CONF_SRC" /etc/gitweb.conf
         fi
 
-        echo "Deploying Gitweb frontend..."
-        sudo cp -r "$REPO_ROOT/scripts/gitweb-simplefrontend/"* /srv/git/
-        sudo chown -R git:git /srv/git/
-    fi
-
-    # Deploy Homepage (already generated during local staging)
-    if [ -f "$REPO_ROOT/scripts/homepage.html" ]; then
-        echo "Deploying Homepage..."
-        sudo mkdir -p /var/www
-        sudo cp "$REPO_ROOT/scripts/homepage.html" /var/www/homepage.html
-        sudo chown www-data:www-data /var/www/homepage.html
-        sudo chmod 644 /var/www/homepage.html
-    fi
-
-    # Deploy System Files
-    echo "Installing system files..."
-    for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse"; do
-        if [ -d "$REPO_ROOT/$DIR" ]; then
-            echo "Installing files from $DIR..."
-            # For Stalwart, we need to make sure the path exists
-            if [ "$DIR" == "opt/stalwart/etc" ]; then
-                sudo mkdir -p /opt/stalwart/etc
-            else
-                sudo mkdir -p "/$DIR"
+        # Deploy Gitweb frontend assets (Dev Only)
+        if [ "$ENV" == "dev" ] && [ -d "$REPO_ROOT/scripts/gitweb-simplefrontend" ]; then
+            echo "Generating services map..."
+            if [ -f "$REPO_ROOT/scripts/gen_services_map.py" ]; then
+                python3 "$REPO_ROOT/scripts/gen_services_map.py"
             fi
 
-            sudo cp -r "$REPO_ROOT/$DIR"/* "/$DIR/"
-
-            # Special handling for systemd: trigger daemon-reload
-            if [ "$DIR" == "etc/systemd/system" ]; then
-                echo "Triggering systemd daemon-reload..."
-                sudo systemctl daemon-reload
-            fi
-
-            # Restart Service
-            if [ "$DIR" == "etc/conduwuit" ]; then
-                echo "Restarting conduwuit service..."
-                sudo systemctl restart conduwuit || echo "Warning: Failed to restart conduwuit"
-            fi
-            if [ "$DIR" == "etc/continuwuity" ]; then
-                echo "Restarting continuwuity service..."
-                sudo systemctl restart continuwuity || echo "Warning: Failed to restart continuwuity"
-            fi
-            if [ "$DIR" == "opt/stalwart/etc" ]; then
-                echo "Restarting stalwart service..."
-                sudo systemctl restart stalwart || echo "Warning: Failed to restart stalwart"
-            fi
-        fi
-    done
-
-    # Deploy Stats Collection
-    if [ -f "$REPO_ROOT/scripts/collect_stats.sh" ]; then
-        echo "Deploying stats collection..."
-        sudo mkdir -p /opt/vps-root/scripts
-        sudo cp "$REPO_ROOT/scripts/collect_stats.sh" /opt/vps-root/scripts/collect_stats.sh
-        sudo chmod +x /opt/vps-root/scripts/collect_stats.sh
-        sudo systemctl enable nutra-stats.timer
-        sudo systemctl start nutra-stats.timer
-    fi
-
-    # Deploy Nutra Env
-    if [ -f "$REPO_ROOT/etc/nutra.env" ]; then
-        echo "Deploying nutra.env..."
-        sudo cp "$REPO_ROOT/etc/nutra.env" /etc/nutra.env
-        sudo chmod 600 /etc/nutra.env
-    fi
-
-    # Deploy Nutra API
-    if [ -f "$REPO_ROOT/opt/api/api.py" ]; then
-        echo "Deploying Nutra API..."
-        sudo mkdir -p /opt/api
-        sudo cp "$REPO_ROOT/opt/api/api.py" /opt/api/api.py
-        sudo chmod +x /opt/api/api.py
-
-        # Ensure Flask is installed
-        if ! python3 -c "import flask" 2>/dev/null; then
-            echo "Installing Flask..."
-            sudo apt-get update && sudo apt-get install -y python3-flask || sudo pip3 install flask
+            echo "Deploying Gitweb frontend..."
+            sudo cp -r "$REPO_ROOT/scripts/gitweb-simplefrontend/"* /srv/git/
+            sudo chown -R git:git /srv/git/
         fi
 
-        echo "Restarting Nutra API service..."
-        sudo systemctl enable nutra-api.service
-        sudo systemctl restart nutra-api.service
+        # Deploy Homepage (already generated during local staging)
+        if [ -f "$REPO_ROOT/scripts/homepage.html" ]; then
+            echo "Deploying Homepage..."
+            sudo mkdir -p /var/www
+            sudo cp "$REPO_ROOT/scripts/homepage.html" /var/www/homepage.html
+            sudo chown www-data:www-data /var/www/homepage.html
+            sudo chmod 644 /var/www/homepage.html
+        fi
+
+        # Deploy System Files
+        echo "Installing system files..."
+        for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse"; do
+            if [ -d "$REPO_ROOT/$DIR" ]; then
+                echo "Installing files from $DIR..."
+                # For Stalwart, we need to make sure the path exists
+                if [ "$DIR" == "opt/stalwart/etc" ]; then
+                    sudo mkdir -p /opt/stalwart/etc
+                else
+                    sudo mkdir -p "/$DIR"
+                fi
+
+                sudo cp -r "$REPO_ROOT/$DIR"/* "/$DIR/"
+
+                # Special handling for systemd: trigger daemon-reload
+                if [ "$DIR" == "etc/systemd/system" ]; then
+                    echo "Triggering systemd daemon-reload..."
+                    sudo systemctl daemon-reload
+                fi
+
+                # Restart Service
+                if [ "$DIR" == "etc/conduwuit" ]; then
+                    echo "Restarting conduwuit service..."
+                    sudo systemctl restart conduwuit || echo "Warning: Failed to restart conduwuit"
+                fi
+                if [ "$DIR" == "etc/continuwuity" ]; then
+                    echo "Restarting continuwuity service..."
+                    sudo systemctl restart continuwuity || echo "Warning: Failed to restart continuwuity"
+                fi
+                if [ "$DIR" == "opt/stalwart/etc" ]; then
+                    echo "Restarting stalwart service..."
+                    sudo systemctl restart stalwart || echo "Warning: Failed to restart stalwart"
+                fi
+            fi
+        done
+
+        # Deploy Stats Collection
+        if [ -f "$REPO_ROOT/scripts/collect_stats.sh" ]; then
+            echo "Deploying stats collection..."
+            sudo mkdir -p /opt/vps-root/scripts
+            sudo cp "$REPO_ROOT/scripts/collect_stats.sh" /opt/vps-root/scripts/collect_stats.sh
+            sudo chmod +x /opt/vps-root/scripts/collect_stats.sh
+            sudo systemctl enable nutra-stats.timer
+            sudo systemctl start nutra-stats.timer
+        fi
+
+        # Deploy Nutra Env
+        if [ -f "$REPO_ROOT/etc/nutra.env" ]; then
+            echo "Deploying nutra.env..."
+            sudo cp "$REPO_ROOT/etc/nutra.env" /etc/nutra.env
+            sudo chmod 600 /etc/nutra.env
+        fi
+
+        # Deploy Nutra API
+        if [ -f "$REPO_ROOT/opt/api/api.py" ]; then
+            echo "Deploying Nutra API..."
+            sudo mkdir -p /opt/api
+            sudo cp "$REPO_ROOT/opt/api/api.py" /opt/api/api.py
+            sudo chmod +x /opt/api/api.py
+
+            # Ensure Flask is installed
+            if ! python3 -c "import flask" 2>/dev/null; then
+                echo "Installing Flask..."
+                sudo apt-get update && sudo apt-get install -y python3-flask || sudo pip3 install flask
+            fi
+
+            echo "Restarting Nutra API service..."
+            sudo systemctl enable nutra-api.service
+            sudo systemctl restart nutra-api.service
+        fi
     fi
 
     # Show deployed config files

@@ -118,7 +118,14 @@ deploy/vps: stage/vps
 	               bash ~/.nginx-ops/staging/scripts/deploy.sh $(ENV)"
 
 .PHONY: deploy/nginx
-deploy/nginx: deploy/vps
+deploy/nginx: ##H @Remote Deploy Nginx configuration only
+deploy/nginx: stage/nginx
+	@echo "Logging deployment..."
+	@echo "$(shell date '+%Y-%m-%d %H:%M:%S') [$(ENV)] User: $(USER) (Nginx Only) \
+		Commit: $(shell git describe --always --dirty) - $(shell git log -1 --format='%s')" >> deployment.log
+	@echo "Connecting to $(VPS_HOST)..."
+	ssh -t $(VPS) "bash ~/.nginx-ops/staging/scripts/deploy.sh test $(ENV) && \
+	               bash ~/.nginx-ops/staging/scripts/deploy.sh $(ENV) --nginx-only"
 
 .PHONY: certbot/nginx
 certbot/nginx: ##H @Remote Run certbot on remote VPS
