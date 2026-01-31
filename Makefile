@@ -111,6 +111,13 @@ deploy/website: ##H @Remote Deploy the static website
 	$(MAKE) -C opt/my-website deploy VPS="$(VPS)"
 
 # Direct Local Deployment (No Staging)
+.PHONY: run/api
+run/api: ##H @Local Run the API server locally with dev bypass
+	@echo "Starting API on port 5000..."
+	@set -a && source etc/nutra.env && set +a && \
+	 export CAPTCHA_BYPASS_TOKEN="dev_token" && \
+	 python3 opt/api/api.py
+
 .PHONY: diff/local
 diff/local: ##H @Local Show diff against system config
 ifdef SUDO_USER

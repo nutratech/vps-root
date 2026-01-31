@@ -8,6 +8,8 @@ from email.mime.text import MIMEText
 from email import encoders, utils
 import requests
 from flask import Flask, jsonify, request
+import secrets
+import base64
 
 app = Flask(__name__)
 
@@ -31,51 +33,39 @@ BLOCKED_CONF_SYSTEM = "/etc/nginx/conf.d/blocked_ips.conf"
 
 # Cloudflare Turnstile Secret (Get from ENV or fallback)
 TURNSTILE_SECRET_KEY = os.environ["TURNSTILE_SECRET_KEY"]
+
+# Matrix Bot Config
+MATRIX_BOT_TOKEN = os.environ.get("MATRIX_BOT_TOKEN")
+MATRIX_BOT_ROOM_ID = os.environ.get("MATRIX_BOT_ROOM_ID")
+MATRIX_HOMESERVER_URL = os.environ.get(
+    "MATRIX_HOMESERVER_URL", "https://matrix.nutra.tk"
+)
+
 CONTACT_INFO = {
     "email": os.environ.get("CONTACT_EMAIL", "shane@nutra.tk"),
     "matrix": os.environ.get("CONTACT_MATRIX", "@gamesguru:matrix.org, @gg:nutra.tk"),
-    "gpg_description": """pub   ed25519/CDBCCB44A608363E 2025-09-11 [SC]
-      C6662F132E169C4802627B1ECDBCCB44A608363E
-uid  Shane J. (GIT SIGN+ENCRYPT KEY [DESKTOP])
-uid  gamesguru (GitHub) <30691680+gamesguru@users.noreply.github.com>
-uid  gamesguru (GitLab) <25245323-gamesguru@users.noreply.gitlab.com>
-uid  gg@desktop <chown_tee@proton.me>
-sub   cv25519/CA76D7960067EE77 2025-09-11 [E]
-      C884FDED5E44D4EEC34F574ACA76D7960067EE77""",
-    "gpg_public_key": """-----BEGIN PGP PUBLIC KEY BLOCK-----
-Version: GnuPG v2
-
-mDMEaMK+LxYJKwYBBAHaRw8BAQdArXbotsYIylKgx3uvcaQYP2TFFkcAKP6WsuVe
-hf/CLHu0KVNoYW5lIEouIChHSVQgU0lHTitFTkNSWVBUIEtFWSBbREVTS1RPUF0p
-iJMEExYIADsCGwMFCwkIBwIGFQoJCAsCBBYCAwECHgECF4AWIQTGZi8TLhacSAJi
-ex7NvMtEpgg2PgUCaMMBDAIZAQAKCRDNvMtEpgg2PuYXAP9FmVrMELg0lkaC+6Hc
-uFG1c3LmuUN41lBzBtOLAZnNRgEA1y+FEIvYQS6n71lfaluAhoEpVM2Bt8NGyrbn
-+JaoaAG0QGdhbWVzZ3VydSAoR2l0SHViKSA8MzA2OTE2ODArZ2FtZXNndXJ1QHVz
-ZXJzLm5vcmVwbHkuZ2l0aHViLmNvbT6IkwQTFgoAOxYhBMZmLxMuFpxIAmJ7Hs28
-y0SmCDY+BQJow1Y9AhsDBQsJCAcCAiICBhUKCQgLAgQWAgMBAh4HAheAAAoJEM28
-y0SmCDY+d9sA/jMj1IksCEAI1LoXm7WT8Cl1P0DzMtvfVEYGlmYJKwAEAQC8V/XT
-kN8rVqjn15I7CHzpl1uzwblWB2EONRDLYNIhDrRAZ2FtZXNndXJ1IChHaXRMYWIp
-IDwyNTI0NTMyMy1nYW1lc2d1cnVAdXNlcnMubm9yZXBseS5naXRsYWIuY29tPoiT
-BBMWCgA7FiEExmYvEy4WnEgCYnsezbzLRKYINj4FAmjDVkgCGwMFCwkIBwICIgIG
-FQoJCAsCBBYCAwECHgcCF4AACgkQzbzLRKYINj7uhAEAu4jowCYO96c5tLkfubzo
-ALDzGmU2B4jtcjvNRPKtfh4BAMWRcpz41GhPVcwbLvvVuucks4NKfc2atS4/+i1z
-B+YHtCBnZ0BkZXNrdG9wIDxjaG93bl90ZWVAcHJvdG9uLm1lPoiQBBMWCgA4FiEE
-xmYvEy4WnEgCYnsezbzLRKYINj4FAmlIqUECGwMFCwkIBwIGFQoJCAsCBBYCAwEC
-HgECF4AACgkQzbzLRKYINj6t/gD9FlMrEv1ZfTwSZWnlFDkiPZNVcPLtTdDcup8p
-qlOS9o8BAI1V2mVr8gycAUc9K3JFSIYUGrqzyFiGIlpeYLpmcecLuDgEaMK+LxIK
-KwYBBAGXVQEFAQEHQJAgIeT9A28rgDYTEIPLI4cG8/1QqzuOqoDtFQ3XJNYLAwEI
-B4h4BBgWCAAgFiEExmYvEy4WnEgCYnsezbzLRKYINj4FAmjCvi8CGwwACgkQzbzL
-RKYINj5GVwD+LZzVDnJivWZmlOdjnjaMYtYmB/DMSFwZ+FRcNsxpDM4BAP0r6fFc
-Kpv1aDkbgz7P85+tEEv0cLSMuRKrw+fB9ZoA
-=BZAp
------END PGP PUBLIC KEY BLOCK-----""",
+    "gpg_description": base64.b64decode(
+        os.environ.get("CONTACT_GPG_DESC_B64", "")
+    ).decode("utf-8"),
+    "gpg_public_key": base64.b64decode(
+        os.environ.get("CONTACT_GPG_KEY_B64", "")
+    ).decode("utf-8"),
 }
 
 STATS_FILE = "/opt/api/stats.json"
 
 
+
+
+
 def validate_captcha(token):
     """Validates the Turnstile token with Cloudflare."""
+    # Local Dev Bypass
+    bypass_token = os.environ.get("CAPTCHA_BYPASS_TOKEN")
+    if bypass_token and secrets.compare_digest(token, bypass_token):
+        print("Captcha bypassed with token")
+        return True
+
     url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
     data = {"secret": TURNSTILE_SECRET_KEY, "response": token}
     try:
@@ -85,6 +75,112 @@ def validate_captcha(token):
     except Exception as e:
         print(f"Validation error: {e}")
         return False
+
+
+def send_matrix_message(user_name, message):
+    """Sends a message to the public Matrix room via the bot."""
+    if not MATRIX_BOT_TOKEN or not MATRIX_BOT_ROOM_ID:
+        print("Matrix bot not configured")
+        return False
+
+    url = f"{MATRIX_HOMESERVER_URL}/_matrix/client/v3/rooms/{MATRIX_BOT_ROOM_ID}/send/m.room.message"
+    headers = {
+        "Authorization": f"Bearer {MATRIX_BOT_TOKEN}",
+        "Content-Type": "application/json",
+    }
+    # Sanitize inputs strictly? Matrix handles text, but let's be safe.
+    # We send as formatted text for bolding the name.
+    formatted_body = f"<strong>Guest ({user_name})</strong>: {message}"
+    plain_body = f"Guest ({user_name}): {message}"
+
+    payload = {
+        "msgtype": "m.text",
+        "body": plain_body,
+        "format": "org.matrix.custom.html",
+        "formatted_body": formatted_body,
+    }
+
+    try:
+        res = requests.post(url, headers=headers, json=payload)
+        if res.status_code == 200:
+            return res.json().get("event_id")
+        else:
+            print(f"Matrix send failed: {res.status_code} {res.text}")
+            return None
+    except Exception as e:
+        print(f"Matrix request error: {e}")
+        return None
+
+
+def get_matrix_replies(original_event_id):
+    """Fetches replies to a specific event ID from the room history."""
+    if not MATRIX_BOT_TOKEN or not MATRIX_BOT_ROOM_ID:
+        return []
+
+    # Fetch recent messages (last 50 should be enough for context)
+    url = (
+        f"{MATRIX_HOMESERVER_URL}/_matrix/client/v3/rooms/{MATRIX_BOT_ROOM_ID}/messages"
+    )
+    headers = {"Authorization": f"Bearer {MATRIX_BOT_TOKEN}"}
+    params = {"dir": "b", "limit": 50}  # Backwards from latest
+
+    replies = []
+    try:
+        res = requests.get(url, headers=headers, params=params)
+        if res.status_code == 200:
+            data = res.json()
+            events = data.get("chunk", [])
+
+            for event in events:
+                # Look for m.room.message events
+                if event.get("type") != "m.room.message":
+                    continue
+
+                content = event.get("content", {})
+                relates_to = content.get("m.relates_to", {})
+
+                # Check if it is a reply to our original_event_id
+                # Structure: content -> m.relates_to -> m.in_reply_to -> event_id
+                in_reply_to = relates_to.get("m.in_reply_to", {})
+                if in_reply_to.get("event_id") == original_event_id:
+                    # Found a reply!
+                    replies.append(
+                        {
+                            "sender": event.get("sender"),
+                            "body": content.get("body", "[Empty]"),
+                            "timestamp": event.get("origin_server_ts"),
+                        }
+                    )
+        return replies
+    except Exception as e:
+        print(f"Matrix history fetch error: {e}")
+        return []
+
+
+def get_matrix_presence(user_id):
+    """Fetches presence status for a Matrix user."""
+    # Check for empty or placeholder token
+    if not MATRIX_BOT_TOKEN or MATRIX_BOT_TOKEN == "YOUR_BOT_ACCESS_TOKEN":
+        print("Presence check skipped: No valid token")
+        return "unknown"
+
+    url = f"{MATRIX_HOMESERVER_URL}/_matrix/client/v3/presence/{user_id}/status"
+    headers = {"Authorization": f"Bearer {MATRIX_BOT_TOKEN}"}
+
+    try:
+        res = requests.get(url, headers=headers, timeout=5)
+        print(f"Presence check for {user_id}: {res.status_code} {res.text}")
+        if res.status_code == 200:
+            data = res.json()
+            # "presence" can be "online", "offline", "unavailable"
+            return data.get("presence", "offline")
+
+        # If 401/403 (Bad Token) or 404, return unknown
+        print(f"Presence fetch failed ({res.status_code}): {res.text}")
+        return "unknown"
+    except Exception as e:
+        print(f"Presence fetch error: {e}")
+        return "unknown"
 
 
 def get_combined_stats():
@@ -267,13 +363,53 @@ Nutra.tk
         return jsonify({"error": f"Failed to send email: {error_msg}"}), 500
 
 
+@app.route("/api/send-chat", methods=["POST"])
+def send_chat():
+    data = request.json
+    token = data.get("token")
+    name = data.get("name", "Anonymous")
+    message = data.get("message")
+
+    if not token:
+        return jsonify({"error": "Missing token"}), 400
+    if not message:
+        return jsonify({"error": "Missing message"}), 400
+    if len(message) > 500:
+        return jsonify({"error": "Message too long"}), 400
+
+    if not validate_captcha(token):
+        return jsonify({"error": "Invalid captcha"}), 403
+
+    event_id = send_matrix_message(name, message)
+    if event_id:
+        return jsonify({"success": True, "event_id": event_id})
+    else:
+        return jsonify({"error": "Failed to send message to Matrix"}), 500
+
+
+@app.route("/api/check-reply", methods=["POST"])
+def check_reply():
+    data = request.json
+    original_event_id = data.get("original_event_id")
+
+    if not original_event_id:
+        return jsonify({"error": "Missing event_id"}), 400
+
+    replies = get_matrix_replies(original_event_id)
+    return jsonify({"replies": replies})
+
+
 @app.route("/api/server-info")
 def server_info():
     stats = get_combined_stats()
+    # Fetch admin presence (hardcoded for now as requested)
+    presence = get_matrix_presence("@gg:nutra.tk")
+
     return jsonify(
         {
             "location": stats.get("server_location", "Unknown"),
             "time": stats.get("updated_at", ""),
+            "admin_presence": presence,
         }
     )
 
