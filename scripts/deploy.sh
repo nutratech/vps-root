@@ -347,11 +347,16 @@ if sudo nginx -t; then
     fi
 
     # Deploy Nutra API
-    if [ -f "$REPO_ROOT/opt/api/api.py" ]; then
+    if [ -f "$REPO_ROOT/opt/api/src/api.py" ]; then
         echo "Deploying Nutra API..."
-        sudo mkdir -p /opt/api
-        sudo cp "$REPO_ROOT/opt/api/api.py" /opt/api/api.py
-        sudo chmod +x /opt/api/api.py
+        sudo mkdir -p /opt/api/src
+        sudo cp "$REPO_ROOT/opt/api/src/api.py" /opt/api/src/api.py
+        sudo chmod +x /opt/api/src/api.py
+
+        if [ -f "$REPO_ROOT/opt/api/src/collect_stats.py" ]; then
+             sudo cp "$REPO_ROOT/opt/api/src/collect_stats.py" /opt/api/src/collect_stats.py
+             sudo chmod +x /opt/api/src/collect_stats.py
+        fi
 
         # Ensure Flask is installed
         which flask || exit 1

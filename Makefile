@@ -98,7 +98,8 @@ stage/vps: ##H @Remote Stage all configuration files on the remote VPS
 		scripts/gen_services_map.py \
 		scripts/collect_stats.sh \
 		etc/systemd/system/*.timer \
-		opt/api/api.py \
+		opt/api/src/api.py \
+		opt/api/src/collect_stats.py \
 		scripts/homepage.html | \
 		ssh $(VPS) "rm -rf ~/.nginx-ops/staging \
 		            && mkdir -p ~/.nginx-ops/staging \
