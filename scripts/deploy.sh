@@ -346,8 +346,8 @@ if sudo nginx -t; then
 
     fi
 
-    # Deploy Nutra API
-    if [ -f "$REPO_ROOT/opt/api/src/api.py" ]; then
+    # Deploy Nutra API (Skip in Nginx-Only mode to avoid overwriting Git Push deployments)
+    if [ -z "$NGINX_ONLY" ] && [ -f "$REPO_ROOT/opt/api/src/api.py" ]; then
         echo "Deploying Nutra API..."
         sudo mkdir -p /opt/api/src
         sudo cp "$REPO_ROOT/opt/api/src/api.py" /opt/api/src/api.py
