@@ -68,7 +68,7 @@ show_diff() {
 
     # Diff configurations recursively
     echo "Checking configuration files..."
-    for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse" "etc/fail2ban"; do
+    for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse" "etc/fail2ban" "etc/letsencrypt"; do
         if [ -d "$REPO_ROOT/$DIR" ]; then
             find "$REPO_ROOT/$DIR" -type f | while read -r FILE; do
                 REL_PATH="${FILE#$REPO_ROOT/$DIR/}"
@@ -293,7 +293,7 @@ if sudo nginx -t; then
 
         # Deploy System Files
         echo "Installing system files..."
-        for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse"; do
+        for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse" "etc/fail2ban" "etc/letsencrypt"; do
             if [ -d "$REPO_ROOT/$DIR" ]; then
                 echo "Installing files from $DIR..."
                 # For Stalwart, we need to make sure the path exists
