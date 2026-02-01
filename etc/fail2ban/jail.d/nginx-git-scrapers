@@ -1,9 +1,0 @@
-[nginx-git-scrapers]
-enabled  = true
-port     = http,https
-filter   = nginx-git-scrapers
-logpath  = /var/log/nginx/access.log
-maxretry = 2
-findtime = 600
-bantime  = 86400
-action   = iptables-allports
