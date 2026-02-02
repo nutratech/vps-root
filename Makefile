@@ -283,6 +283,18 @@ endif
 git/list: ##H @Local List tracked repositories
 	@python3 scripts/manage_repos.py list
 
+.PHONY: git/install-hooks
+git/install-hooks: ##H @Remote Install post-receive hook on VPS
+	@echo "Installing post-receive hook to $(VPS)..."
+	@if [ -z "$(REPO_NAME)" ]; then \
+		echo "Error: REPO_NAME is required (e.g. 'vps-root.git' or 'projects/vps-root.git')"; \
+		echo "Try: make git/install-hooks REPO_NAME=vps-root.git"; \
+		exit 1; \
+	fi
+	scp scripts/post-receive.sh $(VPS):/srv/git/$(REPO_NAME)/hooks/post-receive
+	ssh $(VPS) "chmod +x /srv/git/$(REPO_NAME)/hooks/post-receive"
+	@echo "Hook installed."
+
 .PHONY: git/sync
 git/sync: ##H @Local Sync remote repositories to local JSON
 	@python3 scripts/manage_repos.py --remote $(VPS) sync
