@@ -33,18 +33,10 @@ while read oldrev newrev refname; do
             # We are mimicking that info.
 
             # Fix permissions just in case
-            chmod +x "$DEPLOY_SCRIPT"
-
             # Execute
-            # We use 'prod' as default for the main branch push unless specified otherwise
-            # But wait, the user's Makefile uses ENV variable.
-            # Let's check if there is a way to know the ENV.
-            # For simplicity, we will assume 'prod' for the git hook on the VPS
-            # OR we can default to 'prod' if nothing is passed, but deploy.sh defaults to dev.
-            # Let's pass 'prod' explicitly if it's the main branch?
-            # actually, let's assume the user wants what is in the repo.
-
-            bash "$DEPLOY_SCRIPT" prod
+            # Trigger the deployment service (allowed in sudoers)
+            echo "Triggering deployment service..."
+            sudo systemctl restart nutra-deploy.service
 
         else
             echo "Error: deploy.sh not found in staging!"

@@ -287,12 +287,18 @@ git/list: ##H @Local List tracked repositories
 git/install-hooks: ##H @Remote Install post-receive hook on VPS
 	@echo "Installing post-receive hook to $(VPS)..."
 	@if [ -z "$(REPO)" ]; then \
-		echo "Error: REPO is required (e.g. 'vps-root.git' or 'projects/vps-root.git')"; \
-		echo "Try: make git/install-hooks REPO=vps-root.git"; \
+		echo "Error: REPO is required (e.g. 'nutratech/vps-root.git' or '/home/git/repos/...')"; \
 		exit 1; \
 	fi
-	scp scripts/post-receive.sh $(VPS):/srv/git/$(REPO)/hooks/post-receive
-	ssh $(VPS) "chmod +x /srv/git/$(REPO)/hooks/post-receive || true"
+	@ssh $(VPS) 'target="$(REPO)"; \
+		if [[ "$$target" != /* ]]; then target="/srv/git/$$target"; fi; \
+		echo "Target Repo: $$target"; \
+		if [ ! -d "$$target" ]; then echo "Error: Repository directory not found!"; exit 1; fi; \
+		mkdir -p "$$target/hooks"; \
+		cat > "$$target/hooks/post-receive"' < scripts/post-receive.sh
+	@ssh $(VPS) 'target="$(REPO)"; \
+		if [[ "$$target" != /* ]]; then target="/srv/git/$$target"; fi; \
+		chmod +x "$$target/hooks/post-receive" || true'
 	@echo "Hook installed."
 
 .PHONY: git/sync
