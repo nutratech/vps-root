@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 
 # Configuration
 STAGING_DIR="$HOME/.nginx-ops/staging"
@@ -19,6 +20,13 @@ while read oldrev newrev refname; do
         # Determine branch name from ref
         BRANCH_NAME=$(basename "$refname")
         git --work-tree="$STAGING_DIR" --git-dir="." checkout -f "$BRANCH_NAME"
+
+        # Self-update the hook
+        if [ -f "$STAGING_DIR/scripts/post-receive.sh" ]; then
+            echo "Updating post-receive hook..."
+            cp "$STAGING_DIR/scripts/post-receive.sh" hooks/post-receive
+            chmod +x hooks/post-receive
+        fi
 
         # 2. Run Deployment Script
         if [ -f "$DEPLOY_SCRIPT" ]; then
