@@ -34,9 +34,20 @@ while read oldrev newrev refname; do
 
             # Fix permissions just in case
             # Execute
-            # Trigger the deployment service (allowed in sudoers)
-            echo "Triggering deployment service..."
-            sudo systemctl restart nutra-deploy.service
+            echo "Deploying API..."
+            # 1. Copy API files
+            # Note: We assume the destination directory /opt/api/src exists and is owned by git.
+            cp "$STAGING_DIR/opt/api/src/api.py" /opt/api/src/api.py
+            chmod +x /opt/api/src/api.py
+
+            if [ -f "$STAGING_DIR/opt/api/src/collect_stats.py" ]; then
+                cp "$STAGING_DIR/opt/api/src/collect_stats.py" /opt/api/src/collect_stats.py
+                chmod +x /opt/api/src/collect_stats.py
+            fi
+
+            # 2. Restart API Service
+            echo "Restarting Nutra API service..."
+            sudo /usr/bin/systemctl restart nutra-api.service
 
         else
             echo "Error: deploy.sh not found in staging!"
