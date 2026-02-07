@@ -291,6 +291,14 @@ if sudo nginx -t; then
             sudo chmod 644 /var/www/homepage.html
         fi
 
+        # Deploy Matrix Client Metadata
+        if [ -f "$REPO_ROOT/var/www/matrix-client-metadata.json" ]; then
+            echo "Deploying Matrix Client metadata..."
+            sudo cp "$REPO_ROOT/var/www/matrix-client-metadata.json" /var/www/matrix-client-metadata.json
+            sudo chown www-data:www-data /var/www/matrix-client-metadata.json
+            sudo chmod 644 /var/www/matrix-client-metadata.json
+        fi
+
         # Deploy System Files
         echo "Installing system files..."
         for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse" "etc/fail2ban" "etc/letsencrypt"; do
