@@ -134,6 +134,23 @@ certbot/nginx: ##H @Remote Run certbot on remote VPS
 	@echo "Running certbot on $(VPS_HOST)..."
 	ssh -t $(VPS) "sudo certbot --nginx"
 
+.PHONY: certbot/expand
+certbot/expand: ##H @Remote Consolidate SSL certs (Fixes split certs)
+	@echo "Expanding certificate to cover all subdomains..."
+	ssh -t $(VPS) "sudo certbot certonly --nginx --cert-name dev.nutra.tk \
+		-d dev.nutra.tk \
+		-d api.dev.nutra.tk \
+		-d api-dev.nutra.tk \
+		-d chat.nutra.tk \
+		-d git.nutra.tk \
+		-d mail.nutra.tk \
+		-d matrix.nutra.tk \
+		-d www.dev.nutra.tk \
+		-d element.nutra.tk \
+		-d cinny.nutra.tk \
+		--expand && sudo systemctl reload nginx"
+
+
 # Application Deployment
 .PHONY: build/website
 build/website: ##H @Local Build the static website
