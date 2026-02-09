@@ -9,9 +9,8 @@ Alias=matrix-conduwuit.service
 DynamicUser=yes
 User=conduwuit
 Group=conduwuit
-#Type=notify-reload
-#ReloadSignal=SIGUSR1
-Type=simple
+Type=notify-reload
+ReloadSignal=SIGUSR1
 
 Environment="CONTINUWUITY_LOG_TO_JOURNALD=true"
 Environment="CONTINUWUITY_JOURNALD_IDENTIFIER=%N"
