@@ -1,0 +1,276 @@
+uwu> server show-config
+│                                                  name                                                  │                           value                           │
+├────────────────────────────────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────┤
+│server_name                                                                                             │"nutra.tk"                                                 │
+│address                                                                                                 │ListeningAddr { addrs: Right([127.0.0.1]) }                │
+│port                                                                                                    │ListeningPort { ports: Right([8008]) }                     │
+│tls                                                                                                     │[configured]                                               │
+│unix_socket_path                                                                                        │None                                                       │
+│unix_socket_perms                                                                                       │660                                                        │
+│database_path                                                                                           │"/var/lib/conduwuit"                                       │
+│database_backup_path                                                                                    │Some("/opt/continuwuity-db-backups")                       │
+│database_backups_to_keep                                                                                │5                                                          │
+│new_user_displayname_suffix                                                                             │"🏴🚩"                                                     │
+│allow_announcements_check                                                                               │true                                                       │
+│cache_capacity_modifier                                                                                 │1.0                                                        │
+│db_cache_capacity_mb                                                                                    │384.0                                                      │
+│db_write_buffer_capacity_mb                                                                             │64.0                                                       │
+│pdu_cache_capacity                                                                                      │140000                                                     │
+│auth_chain_cache_capacity                                                                               │140000                                                     │
+│shorteventid_cache_capacity                                                                             │300000                                                     │
+│eventidshort_cache_capacity                                                                             │200000                                                     │
+│eventid_pdu_cache_capacity                                                                              │200000                                                     │
+│shortstatekey_cache_capacity                                                                            │140000                                                     │
+│statekeyshort_cache_capacity                                                                            │140000                                                     │
+│servernameevent_data_cache_capacity                                                                     │900000                                                     │
+│stateinfo_cache_capacity                                                                                │400                                                        │
+│roomid_spacehierarchy_cache_capacity                                                                    │4000                                                       │
+│dns_cache_entries                                                                                       │32768                                                      │
+│dns_min_ttl                                                                                             │10800                                                      │
+│dns_min_ttl_nxdomain                                                                                    │259200                                                     │
+│dns_attempts                                                                                            │10                                                         │
+│dns_timeout                                                                                             │10                                                         │
+│dns_tcp_fallback                                                                                        │true                                                       │
+│query_all_nameservers                                                                                   │true                                                       │
+│query_over_tcp_only                                                                                     │false                                                      │
+│ip_lookup_strategy                                                                                      │5                                                          │
+│max_request_size                                                                                        │20971520                                                   │
+│max_fetch_prev_events                                                                                   │192                                                        │
+│request_conn_timeout                                                                                    │10                                                         │
+│request_timeout                                                                                         │35                                                         │
+│request_total_timeout                                                                                   │320                                                        │
+│request_idle_timeout                                                                                    │5                                                          │
+│request_idle_per_host                                                                                   │1                                                          │
+│well_known_conn_timeout                                                                                 │6                                                          │
+│well_known_timeout                                                                                      │10                                                         │
+│federation_conn_timeout                                                                                 │10                                                         │
+│federation_timeout                                                                                      │60                                                         │
+│policy_server_request_timeout                                                                           │10                                                         │
+│federation_idle_timeout                                                                                 │25                                                         │
+│federation_idle_per_host                                                                                │1                                                          │
+│sender_timeout                                                                                          │180                                                        │
+│sender_idle_timeout                                                                                     │180                                                        │
+│sender_retry_backoff_limit                                                                              │86400                                                      │
+│appservice_timeout                                                                                      │35                                                         │
+│appservice_idle_timeout                                                                                 │300                                                        │
+│pusher_conn_timeout                                                                                     │15                                                         │
+│pusher_timeout                                                                                          │60                                                         │
+│pusher_idle_timeout                                                                                     │15                                                         │
+│client_receive_timeout                                                                                  │75                                                         │
+│client_request_timeout                                                                                  │180                                                        │
+│client_response_timeout                                                                                 │120                                                        │
+│client_shutdown_timeout                                                                                 │15                                                         │
+│sender_shutdown_timeout                                                                                 │5                                                          │
+│allow_registration                                                                                      │true                                                       │
+│suspend_on_register                                                                                     │false                                                      │
+│yes_i_am_very_very_sure_i_want_an_open_registration_server_prone_to_abuse                               │false                                                      │
+│registration_token                                                                                      │                                                           │
+│recaptcha_site_key                                                                                      │Some("6Lf4uGMsAAAAAKole7zRTXmbO859Rjno4VeiIiSM")           │
+│recaptcha_private_site_key                                                                              │Some("6Lf4uGMsAAAAAHpITVFlWMpv6Qw5kxTUXazKxiVj")           │
+│allow_encryption                                                                                        │true                                                       │
+│allow_federation                                                                                        │true                                                       │
+│federation_loopback                                                                                     │false                                                      │
+│forget_forced_upon_leave                                                                                │false                                                      │
+│require_auth_for_profile_requests                                                                       │false                                                      │
+│allow_public_room_directory_over_federation                                                             │true                                                       │
+│allow_public_room_directory_without_auth                                                                │false                                                      │
+│turn_allow_guests                                                                                       │false                                                      │
+│lockdown_public_room_directory                                                                          │false                                                      │
+│allow_device_name_federation                                                                            │true                                                       │
+│allow_inbound_profile_lookup_federation_requests                                                        │true                                                       │
+│allow_room_creation                                                                                     │true                                                       │
+│allow_unstable_room_versions                                                                            │true                                                       │
+│default_room_version                                                                                    │V11                                                        │
+│well_known                                                                                              │[configured]                                               │
+│allow_otlp                                                                                              │false                                                      │
+│otlp_filter                                                                                             │"info"                                                     │
+│otlp_protocol                                                                                           │"http"                                                     │
+│tracing_flame                                                                                           │false                                                      │
+│tracing_flame_filter                                                                                    │"info"                                                     │
+│tracing_flame_output_path                                                                               │"./tracing.folded"                                         │
+│proxy                                                                                                   │None                                                       │
+│trusted_servers                                                                                         │["matrix.org"]                                             │
+│query_trusted_key_servers_first                                                                         │false                                                      │
+│query_trusted_key_servers_first_on_join                                                                 │true                                                       │
+│only_query_trusted_key_servers                                                                          │false                                                      │
+│trusted_server_batch_size                                                                               │256                                                        │
+│log                                                                                                     │"info"                                                     │
+│log_colors                                                                                              │true                                                       │
+│log_span_events                                                                                         │"none"                                                     │
+│log_filter_regex                                                                                        │true                                                       │
+│log_thread_ids                                                                                          │false                                                      │
+│log_to_journald                                                                                         │false                                                      │
+│journald_identifier                                                                                     │None                                                       │
+│openid_token_ttl                                                                                        │3600                                                       │
+│login_via_existing_session                                                                              │true                                                       │
+│login_token_ttl                                                                                         │120000                                                     │
+│turn_username                                                                                           │""                                                         │
+│turn_password                                                                                           │                                                           │
+│turn_uris                                                                                               │["turn:turn.nutra.tk:3478?transport=udp",                  │
+│                                                                                                        │"turn:turn.nutra.tk:3478?transport=tcp",                   │
+│                                                                                                        │"turns:turn.nutra.tk:5349?transport=udp",                  │
+│                                                                                                        │"turns:turn.nutra.tk:5349?transport=tcp"]                  │
+│turn_secret                                                                                             │                                                           │
+│turn_secret_file                                                                                        │None                                                       │
+│turn_ttl                                                                                                │86400                                                      │
+│auto_join_rooms                                                                                         │["#nutra:nutra.tk", "!general:nutra.tk"]                   │
+│auto_deactivate_banned_room_attempts                                                                    │false                                                      │
+│rocksdb_log_level                                                                                       │"error"                                                    │
+│rocksdb_log_stderr                                                                                      │false                                                      │
+│rocksdb_max_log_file_size                                                                               │4194304                                                    │
+│rocksdb_log_time_to_roll                                                                                │0                                                          │
+│rocksdb_optimize_for_spinning_disks                                                                     │false                                                      │
+│rocksdb_direct_io                                                                                       │true                                                       │
+│rocksdb_parallelism_threads                                                                             │0                                                          │
+│rocksdb_max_log_files                                                                                   │3                                                          │
+│rocksdb_compression_algo                                                                                │"zstd"                                                     │
+│rocksdb_compression_level                                                                               │32767                                                      │
+│rocksdb_bottommost_compression_level                                                                    │32767                                                      │
+│rocksdb_bottommost_compression                                                                          │true                                                       │
+│rocksdb_wal_compression                                                                                 │"zstd"                                                     │
+│rocksdb_recovery_mode                                                                                   │1                                                          │
+│rocksdb_paranoid_file_checks                                                                            │false                                                      │
+│rocksdb_checksums                                                                                       │true                                                       │
+│rocksdb_atomic_flush                                                                                    │false                                                      │
+│rocksdb_repair                                                                                          │false                                                      │
+│rocksdb_read_only                                                                                       │false                                                      │
+│rocksdb_secondary                                                                                       │false                                                      │
+│rocksdb_compaction_prio_idle                                                                            │false                                                      │
+│rocksdb_compaction_ioprio_idle                                                                          │true                                                       │
+│rocksdb_compaction                                                                                      │true                                                       │
+│rocksdb_stats_level                                                                                     │1                                                          │
+│emergency_password                                                                                      │                                                           │
+│notification_push_path                                                                                  │"/_matrix/push/v1/notify"                                  │
+│allow_local_presence                                                                                    │true                                                       │
+│allow_incoming_presence                                                                                 │true                                                       │
+│allow_outgoing_presence                                                                                 │true                                                       │
+│presence_idle_timeout_s                                                                                 │300                                                        │
+│presence_offline_timeout_s                                                                              │1800                                                       │
+│presence_timeout_remote_users                                                                           │true                                                       │
+│allow_local_read_receipts                                                                               │true                                                       │
+│allow_incoming_read_receipts                                                                            │true                                                       │
+│allow_outgoing_read_receipts                                                                            │true                                                       │
+│allow_local_typing                                                                                      │true                                                       │
+│allow_outgoing_typing                                                                                   │true                                                       │
+│allow_incoming_typing                                                                                   │true                                                       │
+│typing_federation_timeout_s                                                                             │30                                                         │
+│typing_client_timeout_min_s                                                                             │15                                                         │
+│typing_client_timeout_max_s                                                                             │45                                                         │
+│zstd_compression                                                                                        │false                                                      │
+│gzip_compression                                                                                        │false                                                      │
+│brotli_compression                                                                                      │false                                                      │
+│allow_guest_registration                                                                                │false                                                      │
+│log_guest_registrations                                                                                 │false                                                      │
+│allow_guests_auto_join_rooms                                                                            │false                                                      │
+│allow_legacy_media                                                                                      │true                                                       │
+│freeze_legacy_media                                                                                     │true                                                       │
+│media_startup_check                                                                                     │true                                                       │
+│media_compat_file_link                                                                                  │false                                                      │
+│prune_missing_media                                                                                     │false                                                      │
+│forbidden_remote_server_names                                                                           │RegexSet([])                                               │
+│allowed_remote_server_names                                                                             │RegexSet([])                                               │
+│prevent_media_downloads_from                                                                            │RegexSet([])                                               │
+│forbidden_remote_room_directory_server_names                                                            │RegexSet([])                                               │
+│ignore_messages_from_server_names                                                                       │RegexSet([])                                               │
+│send_messages_from_ignored_users_to_client                                                              │false                                                      │
+│ip_range_denylist                                                                                       │["127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12",             │
+│                                                                                                        │"192.168.0.0/16", "100.64.0.0/10", "192.0.0.0/24",         │
+│                                                                                                        │"169.254.0.0/16", "192.88.99.0/24", "198.18.0.0/15",       │
+│                                                                                                        │"192.0.2.0/24", "198.51.100.0/24", "203.0.113.0/24",       │
+│                                                                                                        │"224.0.0.0/4", "::1/128", "fe80::/10", "fc00::/7",         │
+│                                                                                                        │"2001:db8::/32", "ff00::/8", "fec0::/10"]                  │
+│url_preview_bound_interface                                                                             │None                                                       │
+│url_preview_domain_contains_allowlist                                                                   │[""]                                                       │
+│url_preview_domain_explicit_allowlist                                                                   │[]                                                         │
+│url_preview_domain_explicit_denylist                                                                    │[]                                                         │
+│url_preview_url_contains_allowlist                                                                      │[]                                                         │
+│url_preview_max_spider_size                                                                             │256000                                                     │
+│url_preview_timeout                                                                                     │120                                                        │
+│url_preview_check_root_domain                                                                           │false                                                      │
+│forbidden_alias_names                                                                                   │RegexSet([])                                               │
+│forbidden_usernames                                                                                     │RegexSet([])                                               │
+│startup_netburst                                                                                        │true                                                       │
+│startup_netburst_keep                                                                                   │50                                                         │
+│block_non_admin_invites                                                                                 │false                                                      │
+│enable_msc4284_policy_servers                                                                           │true                                                       │
+│policy_server_check_own_events                                                                          │true                                                       │
+│admin_escape_commands                                                                                   │true                                                       │
+│admin_console_automatic                                                                                 │false                                                      │
+│admin_execute                                                                                           │[]                                                         │
+│admin_execute_errors_ignore                                                                             │false                                                      │
+│admin_signal_execute                                                                                    │[]                                                         │
+│admin_log_capture                                                                                       │"info"                                                     │
+│admin_room_tag                                                                                          │"m.server_notice"                                          │
+│admins_list                                                                                             │[]                                                         │
+│admins_from_room                                                                                        │true                                                       │
+│sentry                                                                                                  │false                                                      │
+│sentry_endpoint                                                                                         │                                                           │
+│sentry_send_server_name                                                                                 │false                                                      │
+│sentry_traces_sample_rate                                                                               │0.15                                                       │
+│sentry_attach_stacktrace                                                                                │false                                                      │
+│sentry_send_panic                                                                                       │true                                                       │
+│sentry_send_error                                                                                       │true                                                       │
+│sentry_filter                                                                                           │"info"                                                     │
+│tokio_console                                                                                           │false                                                      │
+│test                                                                                                    │{}                                                         │
+│admin_room_notices                                                                                      │true                                                       │
+│db_pool_affinity                                                                                        │true                                                       │
+│db_pool_workers                                                                                         │32                                                         │
+│db_pool_workers_limit                                                                                   │64                                                         │
+│db_pool_queue_mult                                                                                      │4                                                          │
+│stream_width_default                                                                                    │32                                                         │
+│stream_width_scale                                                                                      │1.0                                                        │
+│stream_amplification                                                                                    │1024                                                       │
+│sender_workers                                                                                          │0                                                          │
+│listening                                                                                               │true                                                       │
+│config_reload_signal                                                                                    │true                                                       │
+│allow_invalid_tls_certificates_yes_i_know_what_the_fuck_i_am_doing_with_this_and_i_know_this_is_insecure│false                                                      │
+│ldap                                                                                                    │[configured]                                               │
+│antispam                                                                                                │[configured]                                               │
+│blurhashing                                                                                             │[configured]                                               │
+
+tls
+│    name     │value│
+├─────────────┼─────┤
+│certs        │None │
+│key          │None │
+│dual_protocol│false│
+
+well_known
+│    name     │        value         │
+├─────────────┼──────────────────────┤
+│client       │None                  │
+│server       │None                  │
+│support_page │None                  │
+│support_role │None                  │
+│support_email│Some("shane@nutra.tk")│
+│support_mxid │None                  │
+
+ldap
+│       name       │     value      │
+├──────────────────┼────────────────┤
+│enable            │false           │
+│ldap_only         │false           │
+│uri               │None            │
+│base_dn           │""              │
+│bind_dn           │None            │
+│bind_password_file│None            │
+│filter            │"(objectClass=)"│
+│uid_attribute     │"uid"           │
+│name_attribute    │"givenName"     │
+│admin_base_dn     │""              │
+│admin_filter      │""              │
+
+antispam
+│  name  │value│
+├────────┼─────┤
+│meowlnir│None │
+│draupnir│None │
+
+blurhashing
+│        name         │ value  │
+├─────────────────────┼────────┤
+│components_x         │4       │
+│components_y         │3       │
+│blurhash_max_raw_size│33554432│
+
