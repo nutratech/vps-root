@@ -126,7 +126,7 @@ deploy/nginx: stage/nginx
 	@echo "$(shell date '+%Y-%m-%d %H:%M:%S') [$(ENV)] User: $(USER) (Nginx Only) \
 		Commit: $(shell git describe --always --dirty) - $(shell git log -1 --format='%s')" >> deployment.log
 	ssh -t $(VPS) "bash ~/.nginx-ops/staging/scripts/deploy.sh diff $(ENV)"
-	@read -p "Deploy? [Yes/no] " ans && [[ $${ans:-no} =~ ^[Yy]es$$ ]]
+	@read -p "Deploy? [Yes/no] " ans && [[ $${ans:-no} =~ ^[Yy](es)?$$ ]]
 	echo "Connecting to $(VPS_HOST)..."
 	ssh -t $(VPS) "bash ~/.nginx-ops/staging/scripts/deploy.sh test $(ENV) && \
 	               bash ~/.nginx-ops/staging/scripts/deploy.sh $(ENV) --nginx-only"
