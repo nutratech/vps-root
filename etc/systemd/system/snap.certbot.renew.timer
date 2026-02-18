@@ -7,8 +7,8 @@ X-Snappy=yes
 
 [Timer]
 Unit=snap.certbot.renew.service
-OnCalendar=*-*-* 00:04
-OnCalendar=*-*-* 18:36
+OnCalendar=*-*-* 10:30
+OnCalendar=*-*-* 22:20
 
 [Install]
 WantedBy=timers.target
