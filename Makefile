@@ -76,6 +76,13 @@ endif
 VPS := $(VPS_USER)@$(VPS_HOST)
 BACKUP_DIR := $(HOME)/.backups/rocksdb_backups
 
+# Conduwuit/Stalwart only run on dev, skip for prod
+ifneq ($(ENV),prod)
+EXTRA_STAGE_CONFIGS = etc/conduwuit/*.toml etc/matrix-conduit/*.toml opt/stalwart/etc/*.toml
+else
+EXTRA_STAGE_CONFIGS =
+endif
+
 .PHONY: stage/vps
 stage/vps: ##H @Remote Stage all configuration files on the remote VPS
 	@echo "Staging files on $(VPS_HOST) (ENV=$(ENV))..."
@@ -88,11 +95,9 @@ stage/vps: ##H @Remote Stage all configuration files on the remote VPS
 		etc/nginx/conf.d/$(ENV)/*.conf \
 		etc/systemd/system/*.service \
 		etc/fail2ban \
-		etc/conduwuit/*.toml \
-		etc/matrix-conduit/*.toml \
 		etc/matrix-synapse/**/*.yaml \
 		etc/gitweb.conf \
-		opt/stalwart/etc/*.toml \
+		$(EXTRA_STAGE_CONFIGS) \
 		scripts/gitweb-simplefrontend \
 		scripts/deploy.sh \
 		scripts/gen_services_map.py \
