@@ -10,7 +10,7 @@ Disallow: /
 User-agent: meta-externalagent
 Disallow: /
 
-User-agent: meta-webindexer/1.1
+User-agent: meta-webindexer
 Disallow: /
 
 User-agent: RDDocuments
