@@ -36,6 +36,9 @@ show_diff() {
         if [[ "$FILE" == *"/prod/"* ]]; then
             if [ "$ENV" != "prod" ]; then continue; fi
         fi
+        if [[ "$FILE" == *"/nightly/"* ]]; then
+            if [ "$ENV" != "nightly" ]; then continue; fi
+        fi
 
         # Logic to check against default.conf
         TARGET_FILE="$DEST_CONF_DIR/$BASENAME"
@@ -133,6 +136,9 @@ if [ "$1" = "test" ]; then
         fi
         if [[ "$FILE" == *"/prod/"* ]]; then
             if [ "$ENV" != "prod" ]; then continue; fi
+        fi
+        if [[ "$FILE" == *"/nightly/"* ]]; then
+            if [ "$ENV" != "nightly" ]; then continue; fi
         fi
 
         # We copy all found .conf files to the flat temp directory
