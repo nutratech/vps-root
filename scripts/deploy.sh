@@ -271,7 +271,7 @@ if sudo nginx -t; then
     fi
 
     # Deploy Fail2Ban Configurations (Always run even in Nginx-Only mode)
-    if [ -d "$REPO_ROOT/etc/fail2ban" ]; then
+    if [ -d "$REPO_ROOT/etc/fail2ban" ] && [ -d "/etc/fail2ban" ]; then
         echo "Deploying Fail2Ban configurations..."
         sudo cp "$REPO_ROOT/etc/fail2ban/filter.d/"* /etc/fail2ban/filter.d/ || true
         sudo cp "$REPO_ROOT/etc/fail2ban/jail.d/"* /etc/fail2ban/jail.d/ || true

@@ -69,6 +69,8 @@ ENV ?= dev
 
 ifeq ($(ENV),prod)
 	VPS_HOST := $(VPS_HOST_PROD)
+else ifeq ($(ENV),nightly)
+	VPS_HOST := $(VPS_HOST_NIGHTLY)
 else
 	VPS_HOST := $(VPS_HOST_DEV)
 endif
