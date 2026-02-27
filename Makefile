@@ -88,7 +88,9 @@ endif
 .PHONY: stage/vps
 stage/vps: ##H @Remote Stage all configuration files on the remote VPS
 	@echo "Staging files on $(VPS_HOST) (ENV=$(ENV))..."
+ifneq ($(ENV),nightly)
 	ENV=$(ENV) python3 scripts/gen_services_map.py
+endif
 	# Tar files and stream to remote
 	tar cz \
 		etc/nginx/conf.d/*.conf \
@@ -115,6 +117,11 @@ stage/vps: ##H @Remote Stage all configuration files on the remote VPS
 .PHONY: stage/nginx
 stage/nginx: stage/vps
 
+.PHONY: _confirm
+_confirm:
+	@echo "Continue? [Enter] to confirm, or [Ctrl+C] to abort"
+	@read -r
+
 
 .PHONY: deploy/vps
 deploy/vps: ##H @Remote Deploy staged files to remote VPS
@@ -122,6 +129,7 @@ deploy/vps: stage/vps
 	@echo "Logging deployment..."
 	@echo "$(shell date '+%Y-%m-%d %H:%M:%S') [$(ENV)] User: $(USER) \
 		Commit: $(shell git describe --always --dirty) - $(shell git log -1 --format='%s')" >> deployment.log
+	@$(MAKE) _confirm
 	@echo "Connecting to $(VPS_HOST)..."
 	ssh -t $(VPS) "bash ~/.nginx-ops/staging/scripts/deploy.sh test $(ENV) && \
 	               bash ~/.nginx-ops/staging/scripts/deploy.sh $(ENV)"
@@ -133,7 +141,7 @@ deploy/nginx: stage/nginx
 	@echo "$(shell date '+%Y-%m-%d %H:%M:%S') [$(ENV)] User: $(USER) (Nginx Only) \
 		Commit: $(shell git describe --always --dirty) - $(shell git log -1 --format='%s')" >> deployment.log
 	ssh -t $(VPS) "bash ~/.nginx-ops/staging/scripts/deploy.sh diff $(ENV)"
-	@read -p "Deploy? [Yes/no] " ans && [[ $${ans:-no} =~ ^[Yy](es)?$$ ]]
+	@$(MAKE) _confirm
 	echo "Connecting to $(VPS_HOST)..."
 	ssh -t $(VPS) "bash ~/.nginx-ops/staging/scripts/deploy.sh test $(ENV) && \
 	               bash ~/.nginx-ops/staging/scripts/deploy.sh $(ENV) --nginx-only"
