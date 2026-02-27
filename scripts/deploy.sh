@@ -60,7 +60,7 @@ show_diff() {
         else
             echo "New file: $BASENAME"
             # Show content of new file as diff (dev null vs new)
-            diff -u --color=always /dev/null "$FILE" || true
+            # diff -u --color=always /dev/null "$FILE" || true
         fi
     done
 
@@ -85,7 +85,7 @@ show_diff() {
                     fi
                 else
                     echo "New file: $TARGET"
-                    diff -u --color=always /dev/null "$FILE" || true
+                    # diff -u --color=always /dev/null "$FILE" || true
                 fi
             done
         fi
@@ -205,7 +205,6 @@ echo "Deploying for environment: $ENV"
 
 # Always show diff before installing
 show_diff "$ENV"
-
 echo "Installing new configurations..."
 
 # Clean Install: Remove existing configs to prevent stale files

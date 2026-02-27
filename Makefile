@@ -78,11 +78,13 @@ endif
 VPS := $(VPS_USER)@$(VPS_HOST)
 BACKUP_DIR := $(HOME)/.backups/rocksdb_backups
 
-# Conduwuit/Stalwart only run on dev, skip for prod
-ifneq ($(ENV),prod)
-EXTRA_STAGE_CONFIGS = etc/conduwuit/*.toml etc/matrix-conduit/*.toml opt/stalwart/etc/*.toml
-else
+# Conduwuit/Stalwart only run on dev and nightly, skip for prod
+ifeq ($(ENV),prod)
 EXTRA_STAGE_CONFIGS =
+else ifeq ($(ENV),nightly)
+EXTRA_STAGE_CONFIGS = etc/conduwuit/conduwuit-nightly.toml
+else
+EXTRA_STAGE_CONFIGS = etc/conduwuit/*.toml etc/matrix-conduit/*.toml opt/stalwart/etc/*.toml
 endif
 
 .PHONY: stage/vps
@@ -117,10 +119,13 @@ endif
 .PHONY: stage/nginx
 stage/nginx: stage/vps
 
+# Target to prompt for confirmation before proceeding (slow tasks, cleaning builds, etc)
 .PHONY: _confirm
 _confirm:
-	@echo "Continue? [Enter] to confirm, or [Ctrl+C] to abort"
-	@read -r
+	# Verifying required variables are set...
+	@test "$(ENV)" || (echo "ERROR: ENV is not set" && exit 1)
+	# Confirming you wish to proceed...
+	@if [ -t 0 ] && [ -z "$(SKIP_CONFIRM)" ]; then read -p "Press [Enter] to continue or Ctrl+C to cancel..." _; fi
 
 
 .PHONY: deploy/vps
