@@ -312,6 +312,11 @@ if sudo nginx -t; then
                 continue
             fi
 
+            # Skip stalwart directory on non-prod
+            if [ "$ENV" != "prod" ] && [[ "$DIR" == *"stalwart"* ]]; then
+                continue
+            fi
+
             if [ -d "$REPO_ROOT/$DIR" ]; then
                 echo "Installing files from $DIR..."
                 # For Stalwart, we need to make sure the path exists
