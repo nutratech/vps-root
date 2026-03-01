@@ -1,8 +1,8 @@
 [Unit]
 # Auto-generated, DO NOT EDIT
 Description=Socket unix for snap application lxd.user-daemon
-Requires=snap-lxd-36918.mount
-After=snap-lxd-36918.mount
+Requires=snap-lxd-37982.mount
+After=snap-lxd-37982.mount
 X-Snappy=yes
 
 [Socket]
