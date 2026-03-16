@@ -82,7 +82,7 @@ BACKUP_DIR := $(HOME)/.backups/rocksdb_backups
 ifeq ($(ENV),prod)
 EXTRA_STAGE_CONFIGS =
 else ifeq ($(ENV),nightly)
-EXTRA_STAGE_CONFIGS = etc/conduwuit/conduwuit-nightly.toml
+EXTRA_STAGE_CONFIGS = etc/conduwuit/conduwuit-nightly.toml etc/conduwuit/conduwuit-mini.toml
 else
 EXTRA_STAGE_CONFIGS = etc/conduwuit/*.toml etc/matrix-conduit/*.toml opt/stalwart/etc/*.toml
 endif
