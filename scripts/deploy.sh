@@ -243,14 +243,6 @@ find "$REPO_ROOT/etc/nginx" -maxdepth 1 -name "*.conf" | while read -r FILE; do
     BASENAME=$(basename "$FILE")
     echo "Installing $BASENAME..."
     sudo cp "$FILE" /etc/nginx/
-    
-    # Auto-include stream configs in main nginx.conf if missing
-    if [ "$BASENAME" = "postgres-stream.conf" ]; then
-        if sudo test -f /etc/nginx/nginx.conf && ! sudo grep -q "include /etc/nginx/$BASENAME;" /etc/nginx/nginx.conf; then
-            echo "Auto-injecting include for $BASENAME into nginx.conf..."
-            echo "include /etc/nginx/$BASENAME;" | sudo tee -a /etc/nginx/nginx.conf >/dev/null
-        fi
-    fi
 done
 
 # Install PostgreSQL Certificates
