@@ -96,6 +96,8 @@ endif
 	# Tar files and stream to remote
 	tar cz \
 		etc/nginx/conf.d/*.conf \
+		etc/nginx/*.conf \
+		etc/nginx/certs/postgres/* \
 		etc/nginx/snippets/*.conf \
 		etc/nutra.env \
 		etc/nginx/conf.d/$(ENV)/*.conf \

@@ -237,6 +237,22 @@ if [ -d "$NGINX_SNIPPETS_SRC" ]; then
     sudo cp "$NGINX_SNIPPETS_SRC"/*.conf /etc/nginx/snippets/
 fi
 
+# Install top-level Nginx configs (like postgres-stream.conf)
+echo "Installing top-level configs..."
+find "$REPO_ROOT/etc/nginx" -maxdepth 1 -name "*.conf" | while read -r FILE; do
+    BASENAME=$(basename "$FILE")
+    echo "Installing $BASENAME..."
+    sudo cp "$FILE" /etc/nginx/
+done
+
+# Install PostgreSQL Certificates
+if [ -d "$REPO_ROOT/etc/nginx/certs" ]; then
+    echo "Installing certificates..."
+    sudo cp -r "$REPO_ROOT/etc/nginx/certs" /etc/nginx/
+    sudo chown -R root:root /etc/nginx/certs
+    sudo chmod -R 600 /etc/nginx/certs
+fi
+
 echo "Verifying configuration..."
 if [ -n "$DEBUG" ]; then
     echo "Debug mode enabled: running nginx -T"
