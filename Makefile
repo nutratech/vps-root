@@ -105,6 +105,8 @@ endif
 		etc/fail2ban \
 		etc/matrix-synapse/**/*.yaml \
 		etc/gitweb.conf \
+		etc/gitea \
+		var/lib/gitea/custom \
 		$(EXTRA_STAGE_CONFIGS) \
 		scripts/gitweb-simplefrontend \
 		scripts/*.sh \
