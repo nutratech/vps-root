@@ -107,9 +107,8 @@ endif
 		etc/gitweb.conf \
 		$(EXTRA_STAGE_CONFIGS) \
 		scripts/gitweb-simplefrontend \
-		scripts/deploy.sh \
-		scripts/gen_services_map.py \
-		scripts/collect_stats.sh \
+		scripts/*.sh \
+		scripts/*.py \
 		etc/systemd/system/*.timer \
 		opt/api/src/api.py \
 		opt/api/src/collect_stats.py \

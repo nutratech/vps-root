@@ -1,6 +1,60 @@
 {
     "defaultHomeserver": 0,
     "homeserverList": [
-        "nutra.tk"
-    ]
+        "nutra.tk",
+        "continuwuity.org",
+        "converser.eu",
+        "envs.net",
+        "gitter.im",
+        "kde.org",
+        "libera.chat",
+        "matrix.org",
+        "monero.social",
+        "mozilla.org",
+        "neko.dev",
+        "nheko.im",
+        "tchncs.de",
+        "unredacted.org",
+        "xmr.se"
+    ],
+    "allowCustomHomeservers": true,
+    "featuredCommunities": {
+        "openAsDefault": false,
+        "spaces": [
+            "#home:nutra.tk",
+            "#cinny-space:matrix.org",
+            "#community:matrix.org",
+            "#space:unredacted.org",
+            "#science-space:matrix.org",
+            "#libregaming-games:tchncs.de",
+            "#mathematics-on:matrix.org"
+        ],
+        "rooms": [
+            "#general:nutra.tk",
+            "#cinny:matrix.org",
+            "#freesoftware:matrix.org",
+            "#pcapdroid:matrix.org",
+            "#gentoo:matrix.org",
+            "#PrivSec.dev:arcticfoxes.net",
+            "#disroot:aria-net.org"
+        ],
+        "servers": [
+            "nutra.tk",
+            "continuwuity.org",
+            "envs.net",
+            "gitter.im",
+            "kde.org",
+            "libera.chat",
+            "matrix.org",
+            "monero.social",
+            "mozilla.org",
+            "neko.dev",
+            "tchncs.de",
+            "unredacted.org"
+        ]
+    },
+    "hashRouter": {
+        "enabled": true,
+        "basename": "/"
+    }
 }

@@ -374,15 +374,17 @@ if sudo nginx -t; then
             fi
         done
 
-        # Deploy Stats Collection
-        if [ -f "$REPO_ROOT/scripts/collect_stats.sh" ]; then
-            echo "Deploying stats collection..."
-            sudo mkdir -p /opt/vps-root/scripts
-            sudo cp "$REPO_ROOT/scripts/collect_stats.sh" /opt/vps-root/scripts/collect_stats.sh
-            sudo chmod +x /opt/vps-root/scripts/collect_stats.sh
-            sudo systemctl enable nutra-stats.timer
-            sudo systemctl start nutra-stats.timer
-        fi
+        # Deploy helper scripts (Stats & Auto-updates)
+        echo "Deploying helper scripts..."
+        sudo rm -rf /opt/vps-root/scripts
+        sudo mkdir -p /opt/vps-root/scripts
+        sudo cp "$REPO_ROOT/scripts/"*.sh /opt/vps-root/scripts/
+        sudo chmod +x /opt/vps-root/scripts/*.sh
+
+        # Enable and start associated timers
+        sudo systemctl enable --now nutra-stats.timer || true
+        sudo systemctl enable --now mtxclient-cinny-update.timer || true
+        sudo systemctl enable --now mtxclient-element-update.timer || true
 
         # Deploy Nutra Env
         if [ -f "$REPO_ROOT/etc/nutra.env" ]; then

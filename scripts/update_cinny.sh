@@ -49,33 +49,32 @@ if [ ! -s "$TMP_DIR/cinny.tar.gz" ]; then
     exit 1
 fi
 
-# Prepare backup
-echo "Backing up existing installation..."
+# Extract to a staging directory
+STAGING_DIR="${DEST}_staging"
+echo "Extracting to staging directory ($STAGING_DIR)..."
+sudo rm -rf "$STAGING_DIR"
+sudo mkdir -p "$STAGING_DIR"
+sudo tar -xzf "$TMP_DIR/cinny.tar.gz" --strip-components=1 -C "$STAGING_DIR"
+
+# Copy config from current installation if it exists
+if [ -d "$DEST" ] && [ -f "$DEST/config.json" ]; then
+    echo "Copying config.json from current installation..."
+    sudo cp "$DEST/config.json" "$STAGING_DIR/config.json"
+fi
+
+# Set permissions on staging
+echo "Setting permissions..."
+sudo chown -R www-data:www-data "$STAGING_DIR"
+sudo chmod -R 755 "$STAGING_DIR"
+
+# Atomically swap and backup
+echo "Backing up existing installation and swapping in new version..."
 mkdir -p /var/www/cinny_backups
 if [ -d "$DEST" ]; then
     sudo mv "$DEST" "$BACKUP_DIR"
     echo "Backup created at $BACKUP_DIR"
-else
-    echo "No existing installation found at $DEST"
 fi
-
-# Extract
-echo "Extracting..."
-sudo mkdir -p "$DEST"
-sudo tar -xzf "$TMP_DIR/cinny.tar.gz" --strip-components=1 -C "$DEST"
-
-# Restore config
-if [ -f "$BACKUP_DIR/config.json" ]; then
-    echo "Restoring config.json..."
-    sudo cp "$BACKUP_DIR/config.json" "$DEST/config.json"
-else
-    echo "Warning: No config.json found in backup to restore."
-fi
-
-# Set permissions
-echo "Setting permissions..."
-sudo chown -R www-data:www-data "$DEST"
-sudo chmod -R 755 "$DEST"
+sudo mv "$STAGING_DIR" "$DEST"
 
 # Cleanup
 rm -rf "$TMP_DIR"
