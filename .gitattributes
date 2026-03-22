@@ -3,6 +3,8 @@ etc/matrix-synapse/homeserver.yaml filter=git-crypt diff=git-crypt
 etc/matrix-synapse/homeserver.signing.key filter=git-crypt diff=git-crypt
 etc/matrix-synapse/conf.d/email.yaml filter=git-crypt diff=git-crypt
 etc/nutra.env filter=git-crypt diff=git-crypt
+etc/gitea-mirror.env filter=git-crypt diff=git-crypt
+.env filter=git-crypt diff=git-crypt
 etc/nginx/conf.d/secrets.conf filter=git-crypt diff=git-crypt
 etc/postgresql/**/*.conf filter=git-crypt diff=git-crypt
 etc/postgresql/**/pg_hba.conf filter=git-crypt diff=git-crypt

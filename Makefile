@@ -99,7 +99,7 @@ endif
 		etc/nginx/*.conf \
 		etc/nginx/certs/postgres/* \
 		etc/nginx/snippets/*.conf \
-		etc/nutra.env \
+		etc/*.env \
 		etc/nginx/conf.d/$(ENV)/*.conf \
 		etc/systemd/system/*.service \
 		etc/fail2ban \
@@ -175,6 +175,15 @@ certbot/expand: ##H @Remote Consolidate SSL certs (Fixes split certs)
 		-d cinny.nutra.tk \
 		--expand && sudo systemctl reload nginx"
 
+
+# ----------------- Secure Tunnels -----------------
+
+.PHONY: tunnel/gitea-mirror
+tunnel/gitea-mirror: ##H @Remote Open an SSH tunnel to the Gitea Mirror Admin UI (localhost:4321)
+	@echo "Opening secure SSH tunnel to Gitea Mirror on $(VPS_HOST) (Port 4321)..."
+	@printf "Once connected, open your web browser to: \033[1;32mhttp://127.0.0.1:4321\033[0m\n"
+	@printf "Press \033[1;31mCtrl+C\033[0m to close the tunnel when finished.\n"
+	ssh -L 4321:127.0.0.1:4321 $(VPS) -N
 
 # Application Deployment
 .PHONY: build/website

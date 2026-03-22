@@ -385,16 +385,24 @@ if sudo nginx -t; then
         sudo cp "$REPO_ROOT/scripts/"*.sh /opt/vps-root/scripts/
         sudo chmod +x /opt/vps-root/scripts/*.sh
 
-        # Enable and start associated timers
+        # Enable and start associated timers and services
         sudo systemctl enable --now nutra-stats.timer || true
         sudo systemctl enable --now mtxclient-cinny-update.timer || true
         sudo systemctl enable --now mtxclient-element-update.timer || true
+        sudo systemctl enable --now gitea-mirror.service || true
 
         # Deploy Nutra Env
         if [ -f "$REPO_ROOT/etc/nutra.env" ]; then
             echo "Deploying nutra.env..."
             sudo cp "$REPO_ROOT/etc/nutra.env" /etc/nutra.env
             sudo chmod 600 /etc/nutra.env
+        fi
+
+        # Deploy Gitea Mirror Env
+        if [ -f "$REPO_ROOT/etc/gitea-mirror.env" ]; then
+            echo "Deploying gitea-mirror.env..."
+            sudo cp "$REPO_ROOT/etc/gitea-mirror.env" /etc/gitea-mirror.env
+            sudo chmod 600 /etc/gitea-mirror.env
         fi
 
     fi
