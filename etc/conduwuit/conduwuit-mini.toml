@@ -208,7 +208,7 @@ new_user_displayname_suffix = "🏴🚩"
 # systemd-resolved does *not* count as an external cache, even when
 # configured to do so.
 #
-#dns_cache_entries = 32768
+dns_cache_entries = 131072
 
 # Minimum time-to-live in seconds for entries in the DNS cache. The
 # default may appear high to most administrators; this is by design as the
@@ -257,7 +257,7 @@ new_user_displayname_suffix = "🏴🚩"
 # option may need to be enabled. For more details, see:
 # https://continuwuity.org/troubleshooting.html#potential-dns-issues-when-using-docker
 #
-#query_over_tcp_only = false
+query_over_tcp_only = true
 
 # DNS A/AAAA record lookup strategy
 #
@@ -280,7 +280,7 @@ new_user_displayname_suffix = "🏴🚩"
 # the AAAA record contents even if the AAAA record is successful instead
 # of the A record.
 #
-#ip_lookup_strategy = 5
+ip_lookup_strategy = 1
 
 # Max request size for file uploads in bytes. Defaults to 20MB.
 #

@@ -71,7 +71,7 @@ show_diff() {
 
     # Diff configurations recursively
     echo "Checking configuration files..."
-    for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse" "etc/fail2ban" "etc/letsencrypt" "etc/gitea" "var/lib/gitea/custom"; do
+    for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse" "etc/fail2ban" "etc/letsencrypt" "etc/gitea" "var/lib/gitea/custom" "etc/unbound"; do
         if [ -d "$REPO_ROOT/$DIR" ]; then
             find "$REPO_ROOT/$DIR" -type f | while read -r FILE; do
                 REL_PATH="${FILE#$REPO_ROOT/$DIR/}"
@@ -330,7 +330,7 @@ if sudo nginx -t; then
 
         # Deploy System Files
         echo "Installing system files..."
-        for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse" "etc/fail2ban" "etc/letsencrypt" "etc/gitea" "var/lib/gitea/custom"; do
+        for DIR in "etc/systemd/system" "etc/continuwuity" "etc/conduwuit" "etc/matrix-conduit" "opt/stalwart/etc" "etc/matrix-synapse" "etc/fail2ban" "etc/letsencrypt" "etc/gitea" "var/lib/gitea/custom" "etc/unbound"; do
             # Skip conduwuit directories on prod
             if [ "$ENV" = "prod" ] && [[ "$DIR" == *"conduwuit"* || "$DIR" == *"continuwuity"* ]]; then
                 continue
@@ -374,6 +374,10 @@ if sudo nginx -t; then
                 if [ "$DIR" == "etc/gitea" ]; then
                     echo "Restarting gitea service..."
                     sudo systemctl restart gitea || echo "Warning: Failed to restart gitea"
+                fi
+                if [ "$DIR" == "etc/unbound" ]; then
+                    echo "Restarting unbound service..."
+                    sudo systemctl restart unbound || echo "Warning: Failed to restart unbound"
                 fi
             fi
         done
