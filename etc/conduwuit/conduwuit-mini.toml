@@ -216,7 +216,7 @@ dns_cache_entries = 131072
 # longer running Matrix). Only decrease this if you are using an external
 # DNS cache.
 #
-#dns_min_ttl = 10800
+dns_min_ttl = 10800
 
 # Minimum time-to-live in seconds for NXDOMAIN entries in the DNS cache.
 # This value is critical for the server to federate efficiently.
@@ -225,7 +225,7 @@ dns_cache_entries = 131072
 #
 # Defaults to 3 days as these are *very rarely* false negatives.
 #
-#dns_min_ttl_nxdomain = 259200
+dns_min_ttl_nxdomain = 259200
 
 # Number of DNS nameserver retries after a timeout or error.
 #
