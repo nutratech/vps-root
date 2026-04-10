@@ -13,6 +13,7 @@ repos:
       - id: fix-byte-order-marker
       - id: check-case-conflict
       - id: check-symlinks
+        exclude: '(^etc/systemd/system/|^etc/postfix/makedefs\.out$)'
       - id: destroyed-symlinks
       - id: check-yaml
       - id: check-json
@@ -27,6 +28,8 @@ repos:
     rev: v1.44.0
     hooks:
       - id: typos
+        exclude: '(^opt/stalwart/etc/config\.toml$|^etc/postfix/postfix-script$)'
+
       - id: typos
         name: commit-msg-typos
         stages: [commit-msg]
