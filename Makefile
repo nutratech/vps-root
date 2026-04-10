@@ -359,6 +359,7 @@ git/sync: ##H @Local Sync remote repositories to local JSON
 
 .PHONY: format
 format: ##H @Local Format python and shell scripts
+	-pre-commit run --all-files
 	git ls-files '*.conf' ':!etc/fail2ban' | xargs nginxfmt
 	git ls-files '*.py' | xargs black
 	git ls-files '*.sh' | xargs shfmt -l -w

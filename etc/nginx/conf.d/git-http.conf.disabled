@@ -5,7 +5,7 @@ server {
     location / {
         root /usr/share/gitweb;
         index index.cgi gitweb.cgi;
-        
+
         location ~ \.css$ {
             add_header Content-Type text/css;
         }
@@ -52,10 +52,10 @@ server {
         fastcgi_param QUERY_STRING $query_string;
         # Pass remote user for authentication (if we add auth later)
         fastcgi_param REMOTE_USER $remote_user;
-        
+
         # Explicitly tell backend we are on HTTPS
         fastcgi_param HTTPS on;
-        
+
         fastcgi_pass unix:/var/run/fcgiwrap.socket;
     }
 

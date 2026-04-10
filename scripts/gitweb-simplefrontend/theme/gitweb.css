@@ -803,7 +803,7 @@ table.diff_tree span.file_status.deleted {
 }
 
 table.diff_tree span.file_status.moved,
-table.diff_tree span.file_status.mode_chnge {
+table.diff_tree span.file_status.mode_change {
     color: #545454;
 }
 

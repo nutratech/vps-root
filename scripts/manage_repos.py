@@ -292,7 +292,7 @@ for dirpath, dirnames, filenames in os.walk(root):
         if d.endswith('.git'):
             full_path = os.path.join(dirpath, d)
             rel_path = os.path.relpath(full_path, root)
-            
+
             # Get description
             desc = ""
             desc_file = os.path.join(full_path, 'description')
@@ -302,12 +302,12 @@ for dirpath, dirnames, filenames in os.walk(root):
                         desc = f.read().strip()
                         if "Unnamed repository" in desc: desc = ""
                 except: pass
-            
+
             # Get owner/origin via git config
             owner = ""
             origin = ""
             try:
-                # We use git config to read keys. 
+                # We use git config to read keys.
                 # Note: 'git config' might fail if safe.directory issues, but usually fine for reading files directly if we parse?
                 # Safer to use git command.
                 # Only run if directory seems valid.
@@ -320,13 +320,13 @@ for dirpath, dirnames, filenames in os.walk(root):
                         origin = line.split('=', 1)[1]
             except:
                 pass
-                
+
             results[rel_path] = {{
                 'description': desc,
                 'owner': owner,
                 'remotes': {{'origin': origin}} if origin else {{}}
             }}
-            
+
 print(json.dumps(results))
 """
 
@@ -490,7 +490,7 @@ def main():
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # ADD
-    p_add = subparsers.add_parser("add", help="Clone existin repo")
+    p_add = subparsers.add_parser("add", help="Clone existing repo")
     p_add.add_argument("url", help="Git clone URL")
     p_add.add_argument("--name", help="Repository name (e.g. 'cli' or 'projects/cli')")
     p_add.add_argument("--desc", help="Description for gitweb", default="")

@@ -144,7 +144,7 @@
 #	should not be in the command search path of any users.
 # .IP command_directory
 #	The directory for Postfix administrative commands. This
-#	directory should be in the command search path of adminstrative users.
+#	directory should be in the command search path of administrative users.
 # .IP queue_directory
 #	The directory for Postfix queues.
 # .IP data_directory
@@ -211,7 +211,7 @@ umask 022
 
 PATH=/bin:/usr/bin:/usr/sbin:/usr/etc:/sbin:/etc:/usr/contrib/bin:/usr/gnu/bin:/usr/ucb:/usr/bsd
 SHELL=/bin/sh
-IFS=" 	
+IFS="
 "
 BACKUP_IFS="$IFS"
 debug=:
@@ -290,8 +290,8 @@ test -d "$config_directory" || {
 # If this is a secondary instance, don't touch shared files.
 # XXX Solaris does not have "test -e".
 
-instances=`test ! -f $def_config_directory/main.cf || 
-    $POSTCONF -c $def_config_directory -h multi_instance_directories | 
+instances=`test ! -f $def_config_directory/main.cf ||
+    $POSTCONF -c $def_config_directory -h multi_instance_directories |
 	sed 's/,/ /'` || exit 1
 
 update_shared_files=1
@@ -445,7 +445,7 @@ for name in $MOST_PARAMETERS
 do
     eval junk=\$$name
     case "$junk" in
-    *"$mail_version"*) 
+    *"$mail_version"*)
 	case "$pattern" in
 	"") pattern=`echo "$mail_version" | sed 's/\./\\\\./g'` || exit 1
 	esac
@@ -880,7 +880,7 @@ EOF
 #    COMPATIBILITY: editing $config_directory/main.cf, overriding
 #    smtpd_relay_restrictions to prevent inbound mail from
 #    unexpectedly bouncing.
-#    Specify an empty smtpd_relay_restrictions value to keep using 
+#    Specify an empty smtpd_relay_restrictions value to keep using
 #    smtpd_recipient_restrictions as before.
 #EOF
 #	$POSTCONF -c $config_directory "smtpd_relay_restrictions = \

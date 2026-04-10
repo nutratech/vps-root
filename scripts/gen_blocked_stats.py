@@ -83,7 +83,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
     <h1>🛡️ Global Ban List</h1>
-    
+
     <div class="stat-card">
         <div class="big-number">{count}</div>
         <div class="label">Total Blocked IP Addresses</div>
