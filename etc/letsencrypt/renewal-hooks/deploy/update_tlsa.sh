@@ -5,7 +5,7 @@
 # and updates the specific DNS record in Cloudflare via the API.
 
 # Load credentials
-ENV_FILE="/etc/letsencrypt/cloudflare_tlsa.env"
+ENV_FILE="/etc/nutra.env"
 if [ ! -f "$ENV_FILE" ]; then
     echo "TLSA script: missing credentials file at $ENV_FILE"
     exit 0
